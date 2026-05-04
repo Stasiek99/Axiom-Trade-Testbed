@@ -1,0 +1,29 @@
+@use '@angular/material' as mat;
+
+// Dark M3 theme — cyan primary, trading terminal aesthetic
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$cyan-palette,
+  ),
+  density: (scale: -1),
+));
+
+html {
+  @include mat.core();
+  @include mat.all-component-themes($dark-theme);
+  color-scheme: dark;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  background-color: #0a0a0f;
+  color: #e0e0e0;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}

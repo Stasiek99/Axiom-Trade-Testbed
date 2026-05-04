@@ -1,0 +1,46 @@
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-toolbar {
+  font-family: monospace;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+}
+
+.brand-sub {
+  font-size: 0.65rem;
+  opacity: 0.45;
+  margin-left: 0.4rem;
+  align-self: center;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.sidenav-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.app-sidenav {
+  width: 180px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+}
+
+.main-content {
+  height: 100%;
+  overflow: auto;
+  padding: 16px;
+}
