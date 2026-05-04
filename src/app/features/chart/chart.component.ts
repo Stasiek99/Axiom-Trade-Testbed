@@ -1,55 +1,68 @@
-import { Component, OnInit, ElementRef, DestroyRef, inject } from '@angular/core';
-import { createChart, CandlestickSeries } from 'lightweight-charts';
-
-interface Bar {
-  time: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-}
-
-const DUMMY_BARS: Bar[] = [
-  { time: '2024-01-02', open: 42000, high: 43500, low: 41800, close: 43200 },
-  { time: '2024-01-03', open: 43200, high: 44100, low: 42500, close: 43800 },
-  { time: '2024-01-04', open: 43800, high: 45000, low: 43500, close: 44700 },
-  { time: '2024-01-05', open: 44700, high: 45200, low: 43800, close: 44100 },
-  { time: '2024-01-06', open: 44100, high: 44500, low: 42800, close: 43000 },
-  { time: '2024-01-07', open: 43000, high: 43200, low: 41500, close: 41800 },
-  { time: '2024-01-08', open: 41800, high: 42500, low: 41200, close: 42300 },
-  { time: '2024-01-09', open: 42300, high: 43800, low: 42000, close: 43500 },
-  { time: '2024-01-10', open: 43500, high: 44200, low: 43000, close: 43900 },
-  { time: '2024-01-11', open: 43900, high: 44800, low: 43500, close: 44500 },
-];
+import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, DestroyRef, ElementRef, ViewChild, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CandlestickSeries, CrosshairMode, createChart } from 'lightweight-charts';
+import { AlpacaService } from '../../core/services/alpaca.service';
+import { AlpacaWsService } from '../../core/services/alpaca-ws.service';
+import { Bar, TIMEFRAME_MAP } from '../../core/models/bar.model';
+import { SymbolSelectorComponent } from './symbol-selector/symbol-selector.component';
 
 @Component({
   selector: 'app-chart',
+  imports: [CommonModule, MatButtonToggleModule, MatProgressSpinnerModule, SymbolSelectorComponent],
   templateUrl: './chart.component.html',
-  styleUrl: './chart.component.scss'
+  styleUrl: './chart.component.scss',
 })
-export class ChartComponent implements OnInit {
-  private elementRef = inject(ElementRef);
-  private destroyRef = inject(DestroyRef);
-  private chart: ReturnType<typeof createChart> | null = null;
-  private resizeObserver: ResizeObserver | null = null;
+export class ChartComponent implements AfterViewInit {
+  private readonly alpacaService = inject(AlpacaService);
+  private readonly alpacaWs     = inject(AlpacaWsService);
+  private readonly destroyRef    = inject(DestroyRef);
 
-  ngOnInit(): void {
-    const container = this.elementRef.nativeElement as HTMLElement;
+  @ViewChild('chartContainer') chartContainer!: ElementRef<HTMLDivElement>;
+
+  readonly symbol      = signal<string>('ETH/USD');
+  readonly timeframe   = signal<string>('H1');
+  readonly currentPrice = signal<number | null>(null);
+  readonly priceChange  = signal<number>(0);
+  readonly loading      = signal<boolean>(true);
+
+  readonly timeframes = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
+
+  private chart: ReturnType<typeof createChart> | null = null;
+  private series: ReturnType<ReturnType<typeof createChart>['addSeries']> | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  private currentBarClose: number | null = null;
+
+  ngAfterViewInit(): void {
+    const container = this.chartContainer.nativeElement;
 
     this.chart = createChart(container, {
-      width: container.clientWidth,
-      height: container.clientHeight,
       layout: {
-        background: { color: '#1a1a2e' },
-        textColor: '#d1d4dc',
+        background: { color: '#131722' },
+        textColor: '#9db2bd',
+        fontFamily: 'Courier New, monospace',
       },
       grid: {
-        vertLines: { color: '#2a2a3e' },
-        horzLines: { color: '#2a2a3e' },
+        vertLines: { color: '#1e2738' },
+        horzLines: { color: '#1e2738' },
       },
+      localization: { dateFormat: 'MMM dd' },
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+        borderColor: '#1e2738',
+        fixLeftEdge: false,
+        fixRightEdge: false,
+      },
+      rightPriceScale: { borderColor: '#1e2738' },
+      crosshair: { mode: CrosshairMode.Normal },
+      width: container.clientWidth,
+      height: container.clientHeight,
     });
 
-    const series = this.chart.addSeries(CandlestickSeries, {
+    this.series = this.chart.addSeries(CandlestickSeries, {
       upColor: '#26a69a',
       downColor: '#ef5350',
       borderVisible: false,
@@ -57,15 +70,13 @@ export class ChartComponent implements OnInit {
       wickDownColor: '#ef5350',
     });
 
-    series.setData(DUMMY_BARS);
-    this.chart.timeScale().fitContent();
+    this.loadBars();
+    this.connectWebSocket();
 
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.chart) {
-        this.chart.applyOptions({
-          width: container.clientWidth,
-          height: container.clientHeight,
-        });
+    this.resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        this.chart?.applyOptions({ width, height });
       }
     });
     this.resizeObserver.observe(container);
@@ -74,5 +85,50 @@ export class ChartComponent implements OnInit {
       this.resizeObserver?.disconnect();
       this.chart?.remove();
     });
+  }
+
+  private loadBars(): void {
+    this.loading.set(true);
+    const alpacaTf = TIMEFRAME_MAP[this.timeframe()] ?? '1Hour';
+
+    this.alpacaService.getCryptoBars(this.symbol(), alpacaTf)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((bars: Bar[]) => {
+        if (bars.length > 0) {
+          this.series?.setData(bars);
+          this.chart?.timeScale().fitContent();
+          const last = bars.at(-1)!;
+          this.currentPrice.set(last.close);
+          this.currentBarClose = last.close;
+          this.priceChange.set(+(last.close - bars[0].open).toFixed(2));
+        }
+        this.loading.set(false);
+      });
+  }
+
+  private connectWebSocket(): void {
+    this.alpacaWs.streamBars(this.symbol())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        if (event.type === 'bar' && event.bar) {
+          this.series?.update(event.bar);
+          this.currentPrice.set(event.bar.close);
+          this.currentBarClose = event.bar.close;
+        }
+        if (event.type === 'trade' && event.price != null) {
+          this.currentPrice.set(event.price);
+        }
+      });
+  }
+
+  onSymbolChange(sym: string): void {
+    this.symbol.set(sym);
+    this.series?.setData([]);
+    this.loadBars();
+  }
+
+  onTimeframeChange(tf: string): void {
+    this.timeframe.set(tf);
+    this.loadBars();
   }
 }

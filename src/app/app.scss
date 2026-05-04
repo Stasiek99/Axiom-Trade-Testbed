@@ -13,14 +13,14 @@
 
 .brand {
   font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.12em;
+  font-size: 1.35rem;
+  letter-spacing: 0.14em;
 }
 
 .brand-sub {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   opacity: 0.45;
-  margin-left: 0.4rem;
+  margin-left: 0.5rem;
   align-self: center;
 }
 
@@ -41,6 +41,7 @@
 
 .main-content {
   height: 100%;
-  overflow: auto;
-  padding: 16px;
+  overflow: hidden;
+  padding: 12px;
+  background: #0a0a0f;
 }
