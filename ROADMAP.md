@@ -15,6 +15,9 @@ axiom-trade-testbed/               ← Angular project root
 ├── scripts/
 │   └── generate-env.js            ← Reads .env → writes src/environments/*.ts
 ├── src/
+│   ├── test/
+│   │   └── fixtures/
+│   │       └── btc-1m-100-bars.ts    ← Canned bar data reused across indicator and engine tests
 │   ├── environments/
 │   │   ├── environment.ts         ← Generated from .env (gitignored)
 │   │   └── environment.prod.ts    ← Same, for production builds
@@ -50,7 +53,8 @@ axiom-trade-testbed/               ← Angular project root
 │       ├── shared/
 │       │   ├── components/
 │       │   │   ├── stat-card/
-│       │   │   └── loading-spinner/
+│       │   │   ├── loading-spinner/
+│       │   │   └── trade-log/                 ← Per-trade transaction log table
 │       │   └── pipes/
 │       │       └── format-currency.pipe.ts
 │       ├── app.component.ts       ← Root shell
@@ -70,6 +74,7 @@ axiom-trade-testbed/               ← Angular project root
 | Chart library | **lightweight-charts v5** | Same lib as the prototype, battle-tested |
 | HTTP | **HttpClient + interceptor** | Clean header injection, testable |
 | Styling | **SCSS + CSS custom properties** | Dark trading theme, easy to theme |
+| UI library | **Nebular (Akveo)** | Theme-centric, customizable, built-in auth flows, dark trading theme |
 | API keys | **`.env` → `environment.ts` via prebuild script** | Keys never in source control |
 
 ### API Key Strategy
@@ -92,14 +97,16 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 ### Phase 0 — Project Bootstrap
 **Goal:** Angular app runs, chart renders, keys are safe.
 
-- [ ] `ng new axiom-trade-testbed --standalone --routing --style=scss` (Angular v21)
-- [ ] Install `lightweight-charts`, `@types/lightweight-charts`
-- [ ] Add `.env` + `.env.example` files
-- [ ] Write `scripts/generate-env.js` (reads `.env`, emits `environment.ts`)
-- [ ] Add `prestart` / `prebuild` npm scripts that run `generate-env.js`
-- [ ] Gitignore `.env` and `src/environments/environment.ts`
-- [ ] Scaffold `AppComponent` with dark layout shell
-- [ ] Smoke test: chart canvas renders with hardcoded dummy data
+- [x] `ng new axiom-trade-testbed --standalone --routing --style=scss` (Angular v21)
+- [x] Install `lightweight-charts`, `@types/lightweight-charts`
+- [x] Install `@nebular/theme`, `@nebular/eva-icons`, `@nebular/bootstrap-kit`, and peer deps (`@angular/cdk`, Eva design system)
+- [x] Configure `angular.json` budgets (warning: 2MB initial, error: 3MB initial) to catch bundle bloat early
+- [x] Add `.env` + `.env.example` files
+- [x] Write `scripts/generate-env.js` (reads `.env`, emits `environment.ts`)
+- [x] Add `prestart` / `prebuild` npm scripts that run `generate-env.js`
+- [x] Gitignore `.env` and `src/environments/environment.ts`
+- [x] Scaffold `AppComponent` with dark layout shell
+- [x] Smoke test: chart canvas renders with hardcoded dummy data
 
 **Deliverable:** `npm start` → blank dark page with an empty chart. No keys in git.
 
@@ -108,12 +115,13 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 ### Phase 1 — Data Layer
 **Goal:** Pull real historical bars from Alpaca and feed them to the chart.
 
-- [ ] Define `Bar` model (`open, high, low, close, volume, time`)
-- [ ] `AlpacaService` — `getBars(symbol, timeframe, start, end): Observable<Bar[]>`
-- [ ] `AlpacaAuthInterceptor` — attaches `APCA-API-KEY-ID` / `APCA-API-SECRET-KEY` headers
-- [ ] `AlpacaService` — WebSocket wrapper (real-time bars, quotes, trades)
-- [ ] Unit test: `AlpacaService` returns mapped `Bar[]` from mock HTTP response
-- [ ] Asset selector UI (symbol input + timeframe dropdown: 1m, 5m, 15m, 1h, 1d)
+- [x] Define `Bar` model (`open, high, low, close, volume, time`)
+- [x] `AlpacaService` — `getBars(symbol, timeframe, start, end): Observable<Bar[]>`
+- [x] `AlpacaAuthInterceptor` — attaches `APCA-API-KEY-ID` / `APCA-API-SECRET-KEY` headers
+- [x] In-memory request cache on `AlpacaService` (keyed by `symbol+timeframe+range`, TTL-based eviction) to avoid burning through Alpaca's 200 req/min rate limit
+- [x] `AlpacaService` — WebSocket wrapper (real-time bars, quotes, trades)
+- [x] Unit test: `AlpacaService` returns mapped `Bar[]` from mock HTTP response
+- [x] Asset selector UI (symbol input + timeframe dropdown: 1m, 5m, 15m, 1h, 1d)
 
 **Deliverable:** Chart loads last 2 hours of ETH/USD 1-minute bars from Alpaca.
 
@@ -125,6 +133,7 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 - [ ] `ChartComponent` wraps a LightweightCharts instance (destroy on ngOnDestroy)
 - [ ] `ChartService` — manages series (candlestick + optional line series for indicators)
 - [ ] WebSocket subscription: update current bar on `t` (trade), finalize on `b` (bar)
+- [ ] WebSocket auto-reconnect with exponential backoff; on reconnect, fetch missing bars via REST to fill gaps before resuming live feed
 - [ ] Responsive chart sizing (ResizeObserver)
 - [ ] Crosshair price/time tooltip
 
@@ -137,10 +146,11 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 
 #### 3a — Indicator Engine
 - [ ] Built-in indicator functions (pure TS, no side effects):
-  - `sma(bars, period): number[]`
-  - `ema(bars, period): number[]`
-  - `rsi(bars, period): number[]`
-  - `macd(bars, fast, slow, signal): { macd, signal, histogram }[]`
+  - `sma(bars, period): (number | null)[]` — returns `null` for indices where insufficient data exists
+  - `ema(bars, period): (number | null)[]`
+  - `rsi(bars, period): (number | null)[]`
+  - `macd(bars, fast, slow, signal): ({ macd, signal, histogram } | null)[]`
+- [ ] Unit test each indicator against known TA-Lib reference values using canned fixture data
 - [ ] `ChartService.addLineSeries()` — overlay indicator lines on the chart
 
 #### 3b — Strategy Parameter UI
@@ -160,12 +170,17 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 **Goal:** Replay historical bars through the strategy and simulate a portfolio.
 
 - [ ] `DataFeederService` — iterates a `Bar[]` array, emitting one bar at a time (Observable with configurable speed or instant)
+- [ ] **Pre-data seeding:** `DataFeederService` fetches `indicatorMaxPeriod` extra bars before the requested window; indicators compute on the full dataset but only simulated trades within the visible window
 - [ ] `BacktestEngineService`:
   - Maintains portfolio state: `cash`, `position`, `equity curve[]`
   - On each bar: evaluates entry/exit conditions against indicator values computed up to that bar
   - Executes orders with commission and slippage applied
   - Records `TradeResult` on position close
 - [ ] `BacktestRunnerComponent` — Run / Pause / Stop controls, progress bar
+- [ ] **Race condition guards:**
+  - `BacktestRunnerComponent` disables Run while a backtest is in progress
+  - Strategy config is snapshot at start time (not read reactively mid-run)
+  - In-flight observables are cancelled via `takeUntilDestroyed` on component destroy
 - [ ] Equity curve as a line series overlaid on the chart (secondary Y-axis)
 
 **Deliverable:** Running a backtest replays all bars, opens/closes positions, builds equity curve.
@@ -187,11 +202,29 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 | **Avg Trade Duration** | Mean bars held per trade |
 
 - [ ] `StatsPanel` component — card grid displaying all metrics post-backtest
+- [ ] `TradeLogComponent` — scrollable table of every individual trade with columns: entry time/price, exit time/price, PnL, exit reason (stop loss / take profit / signal reversal), color-coded rows
 - [ ] `TradeMarkersComponent` — render ▲ (green) entry and ▼ (red) exit arrows on the candlestick chart at exact timestamps
 - [ ] Drawdown chart — separate area series below the main chart
 - [ ] Export to CSV: full trade log + equity curve
 
 **Deliverable:** After backtest, chart shows entry/exit markers; stats panel shows all metrics.
+
+---
+
+### Phase 5.5 — Backtest Result Persistence
+**Goal:** Backtest runs survive page reloads; users can compare past results.
+
+- [ ] Create a `BacktestHistoryService` using IndexedDB (via `idb-keyval` or raw IndexedDB) to persist:
+  - Strategy config snapshot (params, indicators, time range)
+  - Summary stats (PnL, win rate, Sharpe, max drawdown)
+  - Full trade log array
+  - Equity curve data points
+- [ ] Run history sidebar: list of past runs sorted by date, showing symbol + strategy name + net PnL at a glance
+- [ ] Click a historical run → re-populate stats panel, trade log, and chart markers (reconstruct equity curve series)
+- [ ] "Delete run" and "Clear all history" actions
+- [ ] `BacktestStore` initializes from IndexedDB on app startup
+
+**Deliverable:** Refresh the page after a backtest — results are still there.
 
 ---
 
