@@ -3,9 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "prestart": "node scripts/generate-env.js",
     "start": "ng serve",
-    "prebuild": "node scripts/generate-env.js",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -24,6 +22,8 @@
     "@angular/router": "^21.2.0",
     "html2canvas": "^1.4.1",
     "lightweight-charts": "^5.2.0",
+    "lightweight-charts-indicators": "^0.4.1",
+    "oakscriptjs": "^0.2.8",
     "puppeteer-core": "^24.42.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

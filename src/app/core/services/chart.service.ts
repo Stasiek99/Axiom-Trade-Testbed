@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { createChart, CandlestickSeries, CrosshairMode, MouseEventParams, Time } from 'lightweight-charts';
+import { createChart, CandlestickSeries, LineSeries, CrosshairMode, MouseEventParams, Time } from 'lightweight-charts';
 import { Bar } from '../models/bar.model';
+import type { ChartPoint } from '../indicators/utils';
 
 export interface CrosshairData {
   time: number;
@@ -67,6 +68,23 @@ export class ChartService {
 
   fitContent(): void {
     this.chart?.timeScale().fitContent();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addLineSeries(data: ChartPoint[], options?: Record<string, any>): any {
+    const series = this.chart!.addSeries(LineSeries, {
+      lineWidth: 1,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      ...options,
+    });
+    series.setData(data);
+    return series;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  removeSeries(series: any): void {
+    this.chart?.removeSeries(series);
   }
 
   subscribeCrosshairMove(handler: (data: CrosshairData | null) => void): () => void {
