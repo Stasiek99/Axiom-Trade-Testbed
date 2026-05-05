@@ -415,6 +415,12 @@ export function calcEnvelope(bars: Bar[], length = 20, percent = 0.1) {
   return Envelope.calculate(toOakBars(bars), { length, percent });
 }
 
+export function calcMedian(bars: Bar[], length = 3, atrLength = 14, atrMult = 2) {
+  // plot0: Median, plot1: Upper Band, plot2: Lower Band, plot3: Median EMA
+  // plot4: Median Above, plot5: Median Below
+  return Median.calculate(toOakBars(bars), { length, atrLength, atrMult });
+}
+
 // ─── Volume ──────────────────────────────────────────────────────────────────
 
 export function calcOBV(bars: Bar[]) {

@@ -31,6 +31,136 @@ export interface MACrossPoint {
   crossover: 1 | -1 | 0; // 1 = bullish cross, -1 = bearish cross, 0 = no cross
 }
 
+// Oscillator multi-plot point types
+export interface KDJPoint {
+  k: number;
+  d: number;
+  j: number;
+}
+
+export interface TwoLinePoint {
+  line1: number;
+  line2: number;
+}
+
+// Momentum multi-plot point types
+export interface TRIXPoint {
+  trix: number;
+  signal: number;
+}
+
+export interface SqueezeMomentumPoint {
+  momentum: number;
+  squeeze: boolean;
+}
+
+export interface ImpulseMACDPoint {
+  impulse: number;
+  signal: number;
+  direction: 1 | -1 | 0;
+}
+
+export interface MACD4CPoint {
+  macd: number;
+  signal: number;
+  histogram: number;
+  color: -2 | -1 | 1 | 2; // -2: strong bear, -1: weak bear, 1: weak bull, 2: strong bull
+}
+
+export interface KSTPoint {
+  kst: number;
+  signal: number;
+}
+
+export interface PriceOscillatorPoint {
+  main: number;
+  signal: number;
+  histogram: number;
+}
+
+// Trend indicator multi-plot point types
+export interface ADXPoint {
+  adx: number;
+  plusDI: number;
+  minusDI: number;
+}
+
+export interface DMIPoint {
+  plusDI: number;
+  minusDI: number;
+  adx: number;
+}
+
+export interface IchimokuPoint {
+  tenkan: number;
+  kijun: number;
+  spanA: number;
+  spanB: number;
+  chikou: number;
+}
+
+export interface AroonPoint {
+  up: number;
+  down: number;
+  oscillator: number;
+}
+
+export interface AlligatorPoint {
+  jaw: number;
+  teeth: number;
+  lips: number;
+}
+
+export interface VortexPoint {
+  viPlus: number;
+  viMinus: number;
+}
+
+export interface ChandeKrollPoint {
+  shortStop: number;
+  longStop: number;
+}
+
+export interface FractalPoint {
+  high: number | null;
+  low: number | null;
+}
+
+export interface ChandelierPoint {
+  longStop: number;
+  shortStop: number;
+}
+
+export interface DonchianRibbonPoint {
+  values: number[];
+}
+
+// Channels & Bands multi-plot types
+export interface ThreeBandPoint {
+  upper: number;
+  middle: number;
+  lower: number;
+}
+
+export interface MedianPoint {
+  median: number;
+  upper: number;
+  lower: number;
+  ema: number;
+}
+
+// Volume indicator multi-plot types
+export interface VolumeBarPoint {
+  volume: number;
+  color: 1 | -1 | 0; // 1 = up/green, -1 = down/red, 0 = flat/gray
+}
+
+// Candlestick pattern marker — rendered as chart markers on the price series
+export interface PatternPoint {
+  marker?: { time: number; position: string; shape: string; color: string; text?: string; size?: number };
+  bgColor?: { time: number; color: string };
+}
+
 // Drives the future parameter-editor UI panel for each indicator
 export interface OptionParam {
   key: string;

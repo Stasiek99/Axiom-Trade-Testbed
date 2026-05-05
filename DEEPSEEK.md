@@ -28,10 +28,6 @@ A single-page Angular (v21 standalone) application with:
 | HTTP | **HttpClient + interceptor** for Alpaca API |
 | API keys | **`.env` → `environment.ts`** via prebuild script |
 
-## Frontend Styling Guidelines
-
-> **Rules to be added by user.** Until then, build all UI components using **Nebular components (`nb-*`)** and follow Nebular's theming conventions (`NbThemeModule`, `NbSidebarModule`, etc.). Default to the dark theme variant (`NbThemeModule.forRoot('dark')`) since this is a trading application.
-
 ## Key Directories
 
 ```

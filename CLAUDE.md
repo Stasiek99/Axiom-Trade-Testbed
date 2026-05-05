@@ -4,12 +4,6 @@
 
 Angular (v21 standalone) trading bot testing sandbox. See [DEEPSEEK.md](./DEEPSEEK.md) for full project context and tech stack.
 
-## Frontend Styling
-
-When building or modifying frontend components, build UI using **Nebular (`@nebular/theme`)** components and follow the Nebular theming conventions. Specific style rules are maintained in [DEEPSEEK.md](./DEEPSEEK.md#frontend-styling-guidelines) — refer to the **Frontend Styling Guidelines** section there before implementing any UI work.
-
-The user will add specific style rules to DEEPSEEK.md over time. For now, use `NbThemeModule.forRoot('dark')` and Nebular's component library for all UI.
-
 # CLOUDE.md — Agent Workflow & Field Notes
 
 Operating manual for future Claude instances on this project. Read before acting. Two parts:
