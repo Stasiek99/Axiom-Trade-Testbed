@@ -25,6 +25,12 @@ export interface MACDPoint {
   histogram: number;
 }
 
+export interface MACrossPoint {
+  fast: number;
+  slow: number;
+  crossover: 1 | -1 | 0; // 1 = bullish cross, -1 = bearish cross, 0 = no cross
+}
+
 // Drives the future parameter-editor UI panel for each indicator
 export interface OptionParam {
   key: string;

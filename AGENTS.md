@@ -1,11 +1,20 @@
 # Agent Orchestration Protocol
 
-## Roles
+## Subagent Design-and-Build Loop
 
-| Role | Model | Responsibility |
-|---|---|---|
-| **Brain (Orchestrator)** | Claude Sonnet 4.6 | Architecture, security decisions, code review, complex logic, final integration |
-| **Muscle (Subagent)** | DeepSeek via local proxy | Boilerplate, unit tests, documentation, isolated refactors |
+For any non-trivial change (new feature, refactor, script):
+
+1. **Write/edit** the code.
+2. **Review** — spawn `code-reviewer` subagent on the changed files. It reports issues; it does not fix them.
+3. **QA** — spawn `qa` subagent on the code. It generates tests, runs them, reports pass/fail. It does not fix them.
+4. **Fix** — the parent agent (you) applies all fixes from review + QA reports.
+5. **Ship** — only after review passes and tests pass.
+
+Subagents are **read-only reporters**. All edits happen in the parent.
+
+For research-heavy tasks, spawn `research` first so exploration doesn't pollute the main context.
+
+**Parallel execution:** when reviewing and QA-ing independent files, spawn both in parallel.
 
 ---
 
