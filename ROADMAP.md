@@ -145,13 +145,13 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 **Goal:** User can define a parameterized strategy without writing code.
 
 #### 3a — Indicator Engine
-- [ ] Built-in indicator functions (pure TS, no side effects):
+- [x] Built-in indicator functions (pure TS, no side effects):
   - `sma(bars, period): (number | null)[]` — returns `null` for indices where insufficient data exists
   - `ema(bars, period): (number | null)[]`
   - `rsi(bars, period): (number | null)[]`
   - `macd(bars, fast, slow, signal): ({ macd, signal, histogram } | null)[]`
-- [ ] Unit test each indicator against known TA-Lib reference values using canned fixture data
-- [ ] `ChartService.addLineSeries()` — overlay indicator lines on the chart
+- [x] Unit test each indicator against known TA-Lib reference values using canned fixture data
+- [x] `ChartService.addLineSeries()` — overlay indicator lines on the chart
 
 #### 3b — Strategy Parameter UI
 - [ ] `StrategyBuilderComponent` — reactive form with:

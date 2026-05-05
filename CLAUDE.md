@@ -60,6 +60,46 @@ For research-heavy tasks, spawn `research` first so exploration doesn't pollute 
 
 ---
 
+## Indicator Engine Pattern
+
+Source: `src/app/core/indicators/`
+
+### Adding a new indicator
+
+1. Create `src/app/core/indicators/<category>/<id>.ts`
+2. Export the pure function with the exact signature:
+   ```typescript
+   export function sma(bars: BarInput[], period: number): (number | null)[]
+   ```
+   Return `null` for every index where there is insufficient data.
+3. Export an `IndicatorDef` with full `IndicatorMeta` (id, name, shortName, category, description, overlay, params).  
+   `description` powers the future explanation window.  
+   `params` (array of `OptionParam`) powers the future parameter-editor UI.
+4. Call `indicatorRegistry.register(MY_DEF)` at the bottom of the file (side-effect on import).
+5. Re-export the pure function and def from the category `index.ts`.
+
+### Rendering on the chart
+
+```typescript
+// 1. Calculate
+const values = sma(bars, 20);           // (number | null)[]
+// 2. Convert to chart-ready points
+const data = toChartData(bars, values); // ChartPoint[] (nulls dropped)
+// 3. Draw
+const series = chartService.addLineSeries(data, { color: '#2962FF' });
+// 4. Remove later
+chartService.removeSeries(series);
+```
+
+### Categories
+`moving-averages` | `oscillators` | `momentum` | `trend` | `volatility` | `channels-bands` | `volume` | `patterns`
+
+### Multi-output indicators (MACD, Bollinger Bands, etc.)
+Return `(OutputType | null)[]` where `OutputType` is a named interface (e.g. `MACDPoint`).  
+Call `toChartData` once per plot line, extracting the relevant scalar from the object.
+
+---
+
 ## Self-Annealing Loop
 
 Errors are signal. When something breaks:

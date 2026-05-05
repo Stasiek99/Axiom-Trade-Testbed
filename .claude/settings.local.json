@@ -40,7 +40,9 @@
       "Bash(npx vitest *)",
       "PowerShell(Get-Process *)",
       "WebFetch(domain:docs.alpaca.markets)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(python3 -c \"import sys,json; cfg=json.load\\(sys.stdin\\); print\\(json.dumps\\(cfg['projects']['axiom-trade-testbed']['architect']['test'], indent=2\\)\\)\")",
+      "PowerShell(try { $r = Invoke-WebRequest http://localhost:8082/health -UseBasicParsing -TimeoutSec 3; \"UP: $\\($r.StatusCode\\)\" } catch { \"DOWN: $_\" })"
     ]
   }
 }
