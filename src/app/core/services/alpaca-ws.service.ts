@@ -5,9 +5,10 @@ import { environment } from '../../../environments/environment';
 import { Bar } from '../models/bar.model';
 
 export interface WsEvent {
-  type: 'bar' | 'trade';
+  type: 'bar' | 'trade' | 'connected';
   bar?: Bar;
   price?: number;
+  tradeTime?: number; // UTC seconds — used to snap trade to its bar period
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,6 +18,7 @@ export class AlpacaWsService {
   streamBars(symbol: string): Observable<WsEvent> {
     return new Observable<WsEvent>(subscriber => {
       const ws = new WebSocket(this.WS_URL);
+      let intentionallyClosed = false;
 
       ws.onmessage = event => {
         try {
@@ -31,7 +33,8 @@ export class AlpacaWsService {
                     secret: environment.alpaca.secretKey,
                   }));
                 } else if (msg.msg === 'authenticated') {
-                  ws.send(JSON.stringify({ action: 'subscribe', bars: [symbol] }));
+                  ws.send(JSON.stringify({ action: 'subscribe', bars: [symbol], trades: [symbol], quotes: [symbol] }));
+                  subscriber.next({ type: 'connected' });
                 }
                 break;
               case 'b':
@@ -47,7 +50,30 @@ export class AlpacaWsService {
                 });
                 break;
               case 't':
-                subscriber.next({ type: 'trade', price: msg.p });
+                subscriber.next({
+                  type: 'trade',
+                  price: msg.p,
+                  tradeTime: Math.floor(new Date(msg.t).getTime() / 1000),
+                });
+                break;
+              case 'q':
+                // ap = ask price, bp = bid price; use midpoint if both available
+                if (msg.ap != null || msg.bp != null) {
+                  const price = msg.ap != null && msg.bp != null
+                    ? (msg.ap + msg.bp) / 2
+                    : (msg.ap ?? msg.bp);
+                  subscriber.next({
+                    type: 'trade',
+                    price,
+                    tradeTime: Math.floor(new Date(msg.t).getTime() / 1000),
+                  });
+                }
+                break;
+              case 'subscription':
+                console.log('[WS] subscriptions active:', JSON.stringify(msg));
+                break;
+              case 'error':
+                console.warn('[WS] error from server:', msg.code, msg.msg);
                 break;
             }
           }
@@ -56,10 +82,23 @@ export class AlpacaWsService {
         }
       };
 
-      ws.onerror = () => subscriber.error(new Error('WebSocket error'));
-      ws.onclose  = () => subscriber.complete();
+      let hasErrored = false;
+      ws.onerror = () => {
+        hasErrored = true;
+        subscriber.error(new Error('WebSocket error'));
+      };
+      ws.onclose  = () => {
+        if (!intentionallyClosed && !hasErrored) {
+          subscriber.error(new Error('WebSocket closed unexpectedly'));
+        } else if (intentionallyClosed) {
+          subscriber.complete();
+        }
+      };
 
-      return () => ws.close();
+      return () => {
+        intentionallyClosed = true;
+        ws.close();
+      };
     }).pipe(
       retry({ count: 10, delay: (_, attempt) => timer(Math.min(1000 * Math.pow(2, attempt), 30_000)) })
     );

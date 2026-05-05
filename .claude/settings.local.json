@@ -28,7 +28,19 @@
       "Bash(npm uninstall *)",
       "PowerShell(Stop-Process *)",
       "Bash(rm -rf \"E:/repos/Axiom-Trade-Testbed/.angular\")",
-      "PowerShell(Start-Process \"chrome\" \"http://localhost:4200\")"
+      "PowerShell(Start-Process \"chrome\" \"http://localhost:4200\")",
+      "Bash(Get-ChildItem -Path \"E:\\\\repos\\\\Axiom-Trade-Testbed\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "PowerShell(cd \"E:\\\\repos\\\\Axiom-Trade-Testbed\"; Get-ChildItem -Path \"src\\\\app\" -Recurse | Where-Object { -not $_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object)",
+      "Read(//mnt/e/repos/**)",
+      "Bash(npx tsc *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\ADMINI~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--repos-Axiom-Trade-Testbed\\\\6dfc0dd3-6355-467e-a58a-73040953d4ac\\\\tasks\\\\beggg3dzl.output\" -Wait)",
+      "Bash(Select-String --line-buffered \"Local:|error TS|Error:|failed|Compiled\")",
+      "Bash(npx vitest *)",
+      "PowerShell(Get-Process *)",
+      "WebFetch(domain:docs.alpaca.markets)",
+      "WebSearch"
     ]
   }
 }

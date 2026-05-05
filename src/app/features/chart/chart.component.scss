@@ -73,3 +73,37 @@
   background: rgba(19, 23, 34, 0.75);
   z-index: 10;
 }
+
+.crosshair-tooltip {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(26, 34, 52, 0.92);
+  border: 1px solid #1e2738;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  pointer-events: none;
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.ch-time {
+  color: #9db2bd;
+  margin-right: 6px;
+  font-size: 0.68rem;
+}
+
+.ch-label {
+  color: #5a6a7a;
+  font-size: 0.65rem;
+  margin-left: 6px;
+
+  &:first-of-type {
+    margin-left: 0;
+  }
+}

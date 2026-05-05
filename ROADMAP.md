@@ -130,12 +130,12 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 ### Phase 2 — Live Chart with Real-Time Updates
 **Goal:** Chart updates in real time from the WebSocket feed.
 
-- [ ] `ChartComponent` wraps a LightweightCharts instance (destroy on ngOnDestroy)
-- [ ] `ChartService` — manages series (candlestick + optional line series for indicators)
-- [ ] WebSocket subscription: update current bar on `t` (trade), finalize on `b` (bar)
-- [ ] WebSocket auto-reconnect with exponential backoff; on reconnect, fetch missing bars via REST to fill gaps before resuming live feed
-- [ ] Responsive chart sizing (ResizeObserver)
-- [ ] Crosshair price/time tooltip
+- [x] `ChartComponent` wraps a LightweightCharts instance (destroy on ngOnDestroy)
+- [x] `ChartService` — manages series (candlestick + optional line series for indicators)
+- [x] WebSocket subscription: update current bar on `t` (trade), finalize on `b` (bar)
+- [x] WebSocket auto-reconnect with exponential backoff; on reconnect, fetch missing bars via REST to fill gaps before resuming live feed
+- [x] Responsive chart sizing (ResizeObserver)
+- [x] Crosshair price/time tooltip
 
 **Deliverable:** Live-updating candlestick chart identical in behavior to the prototype.
 

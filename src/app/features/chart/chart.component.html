@@ -28,5 +28,15 @@
         <mat-spinner diameter="32"></mat-spinner>
       </div>
     }
+
+    @if (crosshair(); as ch) {
+      <div class="crosshair-tooltip">
+        <span class="ch-time">{{ formatCrosshairTime(ch.time) }}</span>
+        <span class="ch-label">O</span><span [class.up]="ch.close >= ch.open" [class.down]="ch.close < ch.open">{{ ch.open | number:'1.2-5' }}</span>
+        <span class="ch-label">H</span><span class="up">{{ ch.high | number:'1.2-5' }}</span>
+        <span class="ch-label">L</span><span class="down">{{ ch.low | number:'1.2-5' }}</span>
+        <span class="ch-label">C</span><span [class.up]="ch.close >= ch.open" [class.down]="ch.close < ch.open">{{ ch.close | number:'1.2-5' }}</span>
+      </div>
+    }
   </div>
 </div>
