@@ -1,0 +1,92 @@
+<div class="indicator-info" (click)="closeLegend()">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <div class="indicator-header">
+    <div class="indicator-title-row">
+      <h2 class="indicator-title">{{ indicator().title }}</h2>
+      <a
+        [href]="learnMoreUrl()"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="learn-more-link"
+        matTooltip="Learn more on Google"
+        (click)="$event.stopPropagation()"
+      >
+        <mat-icon class="info-icon">open_in_new</mat-icon>
+      </a>
+    </div>
+    <span class="category-badge">{{ indicator().category }}</span>
+  </div>
+
+  <!-- ── Short description ──────────────────────────────────────────────────── -->
+  <p class="short-desc">{{ resolved().shortDescription }}</p>
+
+  <!-- ── Formula ───────────────────────────────────────────────────────────── -->
+  <section class="formula-section">
+    <h3 class="section-label">Formula</h3>
+    <div
+      class="formula-container"
+      (contextmenu)="onFormulaContextMenu($event)"
+      [innerHTML]="formulaHtml()"
+    ></div>
+    <span class="formula-hint">
+      <mat-icon class="hint-icon">mouse</mat-icon>
+      Right-click to see variable definitions
+    </span>
+  </section>
+
+  <!-- ── Full description ───────────────────────────────────────────────────── -->
+  <section class="full-desc-section">
+    <h3 class="section-label">How It Works</h3>
+    <div class="desc-grid">
+      <div class="desc-card">
+        <span class="desc-label">Assumes</span>
+        <p class="desc-text">{{ resolved().fullDescription.assumptions }}</p>
+      </div>
+      <div class="desc-card">
+        <span class="desc-label">Shows</span>
+        <p class="desc-text">{{ resolved().fullDescription.whatItShows }}</p>
+      </div>
+      <div class="desc-card">
+        <span class="desc-label">Helps with</span>
+        <p class="desc-text">{{ resolved().fullDescription.howItHelps }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Parameters ────────────────────────────────────────────────────────── -->
+  @if (indicator().parameters.length) {
+    <section class="params-section">
+      <h3 class="section-label">Parameters</h3>
+      <div class="param-list">
+        @for (param of indicator().parameters; track param.symbol) {
+          <div class="param-row">
+            <code class="param-symbol">{{ param.symbol }}</code>
+            <span class="param-name">{{ param.name }}</span>
+            <span class="param-default">default: {{ param.defaultValue }}</span>
+            <span class="param-desc">{{ param.description }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+</div>
+
+<!-- ── Formula Legend Popover (portal-like, outside .indicator-info) ──────── -->
+@if (legendOpen()) {
+  <div
+    class="formula-legend-popover"
+    [style.left.px]="legendX()"
+    [style.top.px]="legendY()"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="legend-header">Formula Legend</div>
+    @for (entry of indicator().formulaLegend; track entry.symbol) {
+      <div class="legend-row">
+        <code class="legend-symbol">{{ entry.symbol }}</code>
+        <span class="legend-explanation">{{ entry.explanation }}</span>
+      </div>
+    }
+  </div>
+}

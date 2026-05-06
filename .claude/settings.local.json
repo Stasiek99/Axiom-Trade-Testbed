@@ -47,7 +47,8 @@
       "Bash(/c/Users/Administrator/AppData/Local/Programs/Python/Python312/python.exe \"C:/Users/Administrator/.claude/skills/deep-research/deep_research.py\" \"Angular v21 standalone component patterns\")",
       "Skill(qa-tests)",
       "Skill(qa-tests:*)",
-      "Bash(node_modules/.bin/vitest run *)"
+      "Bash(node_modules/.bin/vitest run *)",
+      "Bash(grep -c \"^  {$\" src/app/core/data/indicators.catalog.ts)"
     ]
   }
 }

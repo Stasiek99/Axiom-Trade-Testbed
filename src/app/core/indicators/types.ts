@@ -1,4 +1,10 @@
 import type { UTCTimestamp } from 'lightweight-charts';
+import type { Lang } from '../i18n/translations';
+
+export type { Lang };
+
+/** Bilingual string pair. Add to IndicatorMeta.descriptionI18n to provide Polish/English descriptions. */
+export type TranslationMap = Partial<Record<Lang, string>>;
 
 export interface BarInput {
   time: UTCTimestamp;
@@ -180,7 +186,8 @@ export interface IndicatorMeta {
   name: string;        // 'Simple Moving Average'
   shortName: string;   // 'SMA' — used on chart axis labels
   category: IndicatorCategory;
-  description: string; // purpose explanation shown in the info window
+  description: string; // English description (legacy; always required as fallback)
+  descriptionI18n?: TranslationMap; // optional multilingual override; use LangService.resolveDescription()
   overlay: boolean;    // true → price pane; false → separate sub-pane
   params: OptionParam[];
 }
@@ -190,4 +197,50 @@ export interface IndicatorDef<T = Record<string, unknown>, O = number | null> {
   meta: IndicatorMeta;
   defaultOptions: T;
   calculate: (bars: BarInput[], options: T) => O[];
+}
+
+// ─── Rich UI metadata layer ───────────────────────────────────────────────────
+// Powers the indicator explanation panel, formula popover, and param editor.
+
+/** Translatable text fields for one indicator — used in INDICATORS_I18N. */
+export interface IndicatorDescI18n {
+  shortDescription: string;
+  fullDescription: {
+    assumptions: string;
+    whatItShows: string;
+    howItHelps: string;
+  };
+}
+
+export type TradingIndicatorCategory =
+  | 'Moving Average'
+  | 'Oscillator'
+  | 'Momentum'
+  | 'Trend'
+  | 'Volatility'
+  | 'Channels & Bands'
+  | 'Volume';
+
+export interface TradingIndicatorParam {
+  name: string;        // e.g. "Period"
+  symbol: string;      // e.g. "n" — used in formulaLegend cross-referencing
+  defaultValue: number;
+  min?: number;
+  max?: number;
+  description: string;
+}
+
+export interface TradingIndicatorData {
+  id: string;          // must match IndicatorMeta.id
+  title: string;       // full industry-standard name (used for Google "Learn More" link)
+  shortDescription: string;
+  fullDescription: {
+    assumptions: string;   // market conditions the indicator assumes
+    whatItShows: string;   // what the output represents
+    howItHelps: string;    // how a trader acts on it
+  };
+  formula: string;           // LaTeX string — render with KaTeX
+  formulaLegend: Array<{ symbol: string; explanation: string }>;
+  parameters: TradingIndicatorParam[];
+  category: TradingIndicatorCategory;
 }

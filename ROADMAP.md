@@ -153,7 +153,7 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 - [x] Unit test each indicator against known TA-Lib reference values using canned fixture data
 - [x] `ChartService.addLineSeries()` — overlay indicator lines on the chart
 
-#### 3b — Strategy Parameter UI
+#### 3c — Strategy Parameter UI
 - [ ] `StrategyBuilderComponent` — reactive form with:
   - **Inputs:** named numeric parameters (e.g., `MA_fast = 10`, `MA_slow = 50`)
   - **Entry condition:** dropdown (e.g., "EMA fast crosses above EMA slow")

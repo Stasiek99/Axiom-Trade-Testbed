@@ -3,9 +3,24 @@
     <span class="brand">AXIOM</span>
     <span class="brand-sub">trade testbed</span>
     <span class="toolbar-spacer"></span>
-    <button mat-icon-button matTooltip="Screenshot" (click)="takeScreenshot()">
-      <mat-icon>photo_camera</mat-icon>
+    <button mat-button class="lang-btn" [matMenuTriggerFor]="langMenu">
+      <span class="fi" [class.fi-pl]="lang.currentLang() === 'pl'" [class.fi-gb]="lang.currentLang() === 'en'"></span>
+      <span class="lang-code">{{ lang.currentLang() === 'pl' ? 'PL' : 'EN' }}</span>
+      <mat-icon>arrow_drop_down</mat-icon>
     </button>
+
+    <mat-menu #langMenu="matMenu" class="lang-menu-panel">
+      <button mat-menu-item (click)="setLang('pl')">
+        <span class="fi fi-pl lang-flag"></span>
+        <span class="lang-name">POLSKI</span>
+        <mat-icon class="lang-check" [style.visibility]="lang.currentLang() === 'pl' ? 'visible' : 'hidden'">check</mat-icon>
+      </button>
+      <button mat-menu-item (click)="setLang('en')">
+        <span class="fi fi-gb lang-flag"></span>
+        <span class="lang-name">ENGLISH</span>
+        <mat-icon class="lang-check" [style.visibility]="lang.currentLang() === 'en' ? 'visible' : 'hidden'">check</mat-icon>
+      </button>
+    </mat-menu>
   </mat-toolbar>
 
   <mat-sidenav-container class="sidenav-container">
@@ -13,13 +28,13 @@
       <mat-nav-list>
         <a mat-list-item routerLink="/">
           <mat-icon matListItemIcon>bar_chart</mat-icon>
-          <span matListItemTitle>Dashboard</span>
+          <span matListItemTitle>{{ lang.t('nav.dashboard') }}</span>
         </a>
       </mat-nav-list>
     </mat-sidenav>
 
     <mat-sidenav-content>
-      <div #mainContent class="main-content">
+      <div class="main-content">
         <router-outlet />
       </div>
     </mat-sidenav-content>
