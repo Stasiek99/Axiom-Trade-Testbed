@@ -1,0 +1,50 @@
+.slot-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.selector-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.category-field {
+  min-width: 160px;
+  flex: 0 0 auto;
+}
+
+.indicator-field {
+  min-width: 240px;
+  flex: 1 1 auto;
+}
+
+.params-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.param-field {
+  width: 110px;
+  flex: 0 0 auto;
+}
+
+.param-toggle {
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.ind-short {
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 0.85em;
+  color: var(--mat-select-enabled-trigger-text-color, #00bcd4);
+}
+
+.ind-name {
+  font-size: 0.82em;
+  opacity: 0.7;
+}

@@ -1,0 +1,119 @@
+<div class="builder-page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="builder-header">
+    <div class="header-left">
+      <h1 class="page-title">{{ lang.t('strategy.title') }}</h1>
+    </div>
+    <div class="header-right">
+      <mat-form-field appearance="outline" class="name-field">
+        <mat-label>{{ lang.t('strategy.name') }}</mat-label>
+        <input matInput [formControl]="nameCtrl" />
+      </mat-form-field>
+
+      <button mat-stroked-button [matMenuTriggerFor]="presetsMenu" class="presets-btn">
+        <mat-icon>bookmarks</mat-icon>
+        {{ lang.t('strategy.presets') }}
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #presetsMenu="matMenu">
+        @for (preset of PRESETS; track preset.name) {
+          <button mat-menu-item (click)="loadPreset(preset)">
+            <mat-icon>auto_awesome</mat-icon>
+            {{ preset.name }}
+          </button>
+        }
+      </mat-menu>
+    </div>
+  </div>
+
+  <!-- ── Entry / Exit cards ─────────────────────────────────────────────── -->
+  <div class="rules-row">
+
+    <mat-card class="rule-card entry-card">
+      <mat-card-content>
+        <app-condition-rule-editor
+          label="entry"
+          [rule]="entryRule()"
+          (ruleChange)="onEntryChange($event)"
+        />
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="rule-card exit-card">
+      <mat-card-content>
+        <app-condition-rule-editor
+          label="exit"
+          [rule]="exitRule()"
+          (ruleChange)="onExitChange($event)"
+        />
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
+  <!-- ── Risk ───────────────────────────────────────────────────────────── -->
+  <mat-card class="risk-card">
+    <mat-card-content>
+      <div class="section-label">
+        <mat-icon>manage_accounts</mat-icon>
+        <span>{{ lang.t('strategy.risk.title') }}</span>
+      </div>
+      <div class="risk-row">
+
+        <mat-form-field appearance="outline" class="risk-field">
+          <mat-label>{{ lang.t('strategy.risk.positionSize') }}</mat-label>
+          <input
+            matInput
+            type="number"
+            [value]="risk().positionSizePct"
+            min="0.1"
+            max="100"
+            step="0.5"
+            (change)="onRiskChange('positionSizePct', $event)"
+          />
+          <span matTextSuffix>%</span>
+          <mat-hint>{{ lang.t('strategy.risk.positionHint') }}</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="risk-field">
+          <mat-label>{{ lang.t('strategy.risk.commission') }}</mat-label>
+          <input
+            matInput
+            type="number"
+            [value]="risk().commissionBps"
+            min="0"
+            step="0.5"
+            (change)="onRiskChange('commissionBps', $event)"
+          />
+          <span matTextSuffix>bps</span>
+          <mat-hint>{{ lang.t('strategy.risk.commissionHint') }}</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="risk-field">
+          <mat-label>{{ lang.t('strategy.risk.slippage') }}</mat-label>
+          <input
+            matInput
+            type="number"
+            [value]="risk().slippageBps"
+            min="0"
+            step="0.5"
+            (change)="onRiskChange('slippageBps', $event)"
+          />
+          <span matTextSuffix>bps</span>
+          <mat-hint>{{ lang.t('strategy.risk.slippageHint') }}</mat-hint>
+        </mat-form-field>
+
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ── Run ────────────────────────────────────────────────────────────── -->
+  <div class="actions-row">
+    <button mat-flat-button class="run-btn" [matTooltip]="lang.t('strategy.backtestPhase4')">
+      <mat-icon>play_arrow</mat-icon>
+      {{ lang.t('strategy.runBacktest') }}
+    </button>
+  </div>
+
+</div>

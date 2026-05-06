@@ -1,0 +1,50 @@
+<div class="rule-editor">
+  <div class="rule-label">
+    <mat-icon class="rule-icon">{{ label() === 'entry' ? 'trending_up' : 'trending_down' }}</mat-icon>
+    <span>{{ lang.t('strategy.' + label() + 'Condition') }}</span>
+  </div>
+
+  <!-- Primary indicator -->
+  <app-indicator-slot-editor
+    [slot]="primarySlot()"
+    (slotChange)="onPrimarySlotChange($event)"
+  />
+
+  <!-- Condition selector + optional threshold -->
+  <div class="condition-row">
+    <mat-form-field appearance="outline" class="condition-field">
+      <mat-label>{{ lang.t('strategy.when') }}</mat-label>
+      <mat-select [value]="conditionKey()" (selectionChange)="onConditionChange($event.value)">
+        @for (cond of availableConditions(); track cond.key) {
+          <mat-option [value]="cond.key">{{ lang.t('condition.' + cond.key) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (needsThreshold()) {
+      <mat-form-field appearance="outline" class="threshold-field">
+        <mat-label>{{ lang.t('strategy.level') }}</mat-label>
+        <input
+          matInput
+          type="number"
+          [value]="threshold() ?? ''"
+          (change)="onThresholdChange($any($event.target).value)"
+        />
+      </mat-form-field>
+    }
+  </div>
+
+  <!-- Secondary indicator — only shown for crossover conditions -->
+  @if (needsSecondary()) {
+    <div class="secondary-slot">
+      <div class="secondary-label">
+        <mat-icon class="compare-icon">compare_arrows</mat-icon>
+        <span>{{ lang.t('strategy.compareWith') }}</span>
+      </div>
+      <app-indicator-slot-editor
+        [slot]="secondarySlot()"
+        (slotChange)="onSecondarySlotChange($event)"
+      />
+    </div>
+  }
+</div>

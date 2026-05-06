@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import type { IndicatorDescI18n, IndicatorMeta } from '../indicators';
 import { type Lang, TRANSLATIONS } from '../i18n/translations';
 import { INDICATORS_I18N } from '../i18n/indicators.i18n';
+import { PARAM_DESCRIPTIONS_PL } from '../i18n/param-descriptions.i18n';
 
 @Injectable({ providedIn: 'root' })
 export class LangService {
@@ -26,5 +27,20 @@ export class LangService {
 
   resolveIndicatorDesc(id: string, lang: Lang, fallback: IndicatorDescI18n): IndicatorDescI18n {
     return INDICATORS_I18N[id]?.[lang] ?? fallback;
+  }
+
+  /** Translates an OptionParam label (e.g. "Fast Period" → "Szybki okres").
+   *  Falls back to the original label when no translation exists. */
+  paramLabel(label: string): string {
+    const key = 'param.' + label.toLowerCase().replace(/\s+/g, '_');
+    const result = TRANSLATIONS[this._lang()][key];
+    return result ?? label;
+  }
+
+  /** Translates an OptionParam description (tooltip) for a given indicator.
+   *  Falls back to the original English description when no translation exists. */
+  paramDescription(indicatorId: string, paramKey: string, fallback: string): string {
+    if (this._lang() === 'en') return fallback;
+    return PARAM_DESCRIPTIONS_PL[`${indicatorId}.${paramKey}`] ?? fallback;
   }
 }

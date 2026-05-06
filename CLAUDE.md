@@ -94,6 +94,44 @@ Call `toChartData` once per plot line, extracting the relevant scalar from the o
 
 ---
 
+## DeepSeek Proxy — Rules & Limits
+
+Proxy endpoint: `localhost:8082`. Invocation: `.\subagent.ps1 -Task "..."`.
+
+**Hard payload limit: ~4 KB per call.**  
+Tasks larger than ~4 KB reliably return `400 Bad Request`. The proxy silently rejects oversized requests — it does not truncate or warn.
+
+### Batching rule
+When generating or translating content for N items, never send all N in one call.
+
+1. Estimate task size: `len(items) × avg_item_size`. If > 3 KB, split.
+2. Keep each batch ≤ 8–10 items (safe ceiling for indicator-sized payloads).
+3. Run up to 3 batches in parallel (PowerShell background jobs or sequential calls).
+4. Merge results after all batches complete.
+
+### Passing large task text
+Do NOT inline a large task string into the `-Task` argument — shell quoting mangling causes failures.  
+Write the task to a temp file first, then read it:
+```powershell
+# Write task
+Set-Content .claude\task.txt @'
+<task content here>
+'@ -Encoding utf8
+
+# Invoke
+$task = Get-Content .claude\task.txt -Raw
+.\subagent.ps1 -Task $task
+```
+
+### Language direction
+Always state the target language explicitly as the first line of the task:
+```
+Translate to POLISH. Do not include the original English.
+```
+Omitting this causes the model to return English.
+
+---
+
 ## Self-Annealing Loop
 
 Errors are signal. When something breaks:
@@ -103,3 +141,19 @@ Errors are signal. When something breaks:
 4. Append a dated entry to the Experiment Log below if the failure was unexpected.
 
 The system gets stronger with every failure that's written down.
+
+---
+
+## Experiment Log
+
+### 2026-05-06 — DeepSeek proxy 400 on large batches
+**What happened:** Sent 33-indicator translation tasks (~15 KB each) to the proxy. Every call returned `400 Bad Request` with no body.  
+**Root cause:** Proxy has an undocumented payload size limit (~4 KB). Large requests are rejected outright.  
+**Fix:** Split into 10 batches of 8–10 indicators (~2–4 KB each); all succeeded.  
+**Rule added:** See "DeepSeek Proxy — Rules & Limits" section above.
+
+### 2026-05-06 — Batch returned in English instead of Polish
+**What happened:** One translation batch came back in English despite the task being in Polish context.  
+**Root cause:** Task text was all English source material with no explicit target-language directive.  
+**Fix:** Added "Translate to POLISH." as the first line of every translation task.  
+**Rule added:** Always state target language explicitly as first line.
