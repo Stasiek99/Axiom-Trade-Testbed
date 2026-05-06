@@ -2,26 +2,98 @@ export * from './types';
 export * from './registry';
 export * from './utils';
 
-// Indicator implementations live in category sub-folders.
-// Each file self-registers on import. Import the ones you need:
-//
-// Moving Averages (15):
-//   import { sma } from './moving-averages/sma';
-//   import { ema } from './moving-averages/ema';
-//   import { wma } from './moving-averages/wma';
-//   import { rma } from './moving-averages/rma';
-//   import { smma } from './moving-averages/smma';
-//   import { dema } from './moving-averages/dema';
-//   import { tema } from './moving-averages/tema';
-//   import { hma } from './moving-averages/hma';
-//   import { lsma } from './moving-averages/lsma';
-//   import { zlsma } from './moving-averages/zlsma';
-//   import { alma } from './moving-averages/alma';
-//   import { vwma } from './moving-averages/vwma';
-//   import { mcginleyDynamic } from './moving-averages/mcginley';
-//   import { macross } from './moving-averages/macross';
-//   import { maribbon } from './moving-averages/maribbon';
-//
-// Oscillators / Momentum:
-//   import { rsi } from './oscillators/rsi';
-//   import { macd } from './momentum/macd';
+// Side-effect imports — each file self-registers on import
+import './moving-averages/sma';
+import './moving-averages/ema';
+import './moving-averages/wma';
+import './moving-averages/rma';
+import './moving-averages/smma';
+import './moving-averages/dema';
+import './moving-averages/tema';
+import './moving-averages/hma';
+import './moving-averages/lsma';
+import './moving-averages/zlsma';
+import './moving-averages/alma';
+import './moving-averages/vwma';
+import './moving-averages/mcginley';
+import './moving-averages/macross';
+import './moving-averages/maribbon';
+
+import './oscillators/rsi';
+import './oscillators/stochastic';
+import './oscillators/stochrsi';
+import './oscillators/cci';
+import './oscillators/williams-r';
+import './oscillators/chande-mo';
+import './oscillators/dpo';
+import './oscillators/rvi';
+import './oscillators/tsi';
+import './oscillators/bb-percentb';
+import './oscillators/fisher-transform';
+import './oscillators/ultimate-oscillator';
+import './oscillators/wave-trend';
+import './oscillators/kdj';
+import './oscillators/connors-rsi';
+import './oscillators/relative-volatility-index';
+import './oscillators/smi-ergodic';
+import './oscillators/awesome-oscillator';
+
+import './momentum/macd';
+import './momentum/momentum';
+import './momentum/roc';
+import './momentum/bop';
+import './momentum/bull-bear-power';
+import './momentum/elder-force-index';
+import './momentum/price-oscillator';
+import './momentum/coppock-curve';
+import './momentum/trix';
+import './momentum/kst';
+import './momentum/squeeze-momentum';
+import './momentum/impulse-macd';
+import './momentum/macd4c';
+
+import './trend/adx';
+import './trend/dmi';
+import './trend/ichimoku';
+import './trend/parabolic-sar';
+import './trend/supertrend';
+import './trend/aroon';
+import './trend/bb-trend';
+import './trend/choppiness';
+import './trend/mass-index';
+import './trend/vortex';
+import './trend/williams-alligator';
+import './trend/zig-zag';
+import './trend/chande-kroll-stop';
+import './trend/williams-fractals';
+import './trend/coral-trend';
+import './trend/chandelier-exit';
+import './trend/donchian-trend-ribbon';
+import './trend/twap';
+
+import './volatility/atr';
+import './volatility/adr';
+import './volatility/standard-deviation';
+import './volatility/historical-volatility';
+import './volatility/bb-bandwidth';
+import './volatility/bollinger-bars';
+
+import './volume/obv';
+import './volume/mfi';
+import './volume/pvt';
+import './volume/volume-oscillator';
+import './volume/chaikin-mf';
+import './volume/chaikin-oscillator';
+import './volume/ease-of-movement';
+import './volume/klinger-oscillator';
+import './volume/net-volume';
+import './volume/volume-delta';
+import './volume/cumulative-volume-delta';
+import './volume/obv-macd';
+import './volume/colored-volume';
+
+import './channels-bands/bollinger-bands';
+import './channels-bands/keltner-channels';
+import './channels-bands/donchian-channels';
+import './channels-bands/envelope';
+import './channels-bands/median';

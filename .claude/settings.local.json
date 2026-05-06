@@ -42,7 +42,13 @@
       "WebFetch(domain:docs.alpaca.markets)",
       "WebSearch",
       "Bash(python3 -c \"import sys,json; cfg=json.load\\(sys.stdin\\); print\\(json.dumps\\(cfg['projects']['axiom-trade-testbed']['architect']['test'], indent=2\\)\\)\")",
-      "PowerShell(try { $r = Invoke-WebRequest http://localhost:8082/health -UseBasicParsing -TimeoutSec 3; \"UP: $\\($r.StatusCode\\)\" } catch { \"DOWN: $_\" })"
+      "PowerShell(try { $r = Invoke-WebRequest http://localhost:8082/health -UseBasicParsing -TimeoutSec 3; \"UP: $\\($r.StatusCode\\)\" } catch { \"DOWN: $_\" })",
+      "Skill(deep-research)",
+      "Bash(/c/Users/Administrator/AppData/Local/Programs/Python/Python312/python.exe \"C:/Users/Administrator/.claude/skills/deep-research/deep_research.py\" \"Angular v21 standalone component patterns\")",
+      "Skill(qa-tests)",
+      "Skill(qa-tests:*)",
+      "Bash(node_modules/.bin/vitest run *)",
+      "Bash(grep -c \"^  {$\" src/app/core/data/indicators.catalog.ts)"
     ]
   }
 }

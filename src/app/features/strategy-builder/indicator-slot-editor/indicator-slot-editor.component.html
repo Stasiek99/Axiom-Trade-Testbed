@@ -1,0 +1,78 @@
+<div class="slot-editor">
+
+  <!-- Category + Indicator row -->
+  <div class="selector-row">
+    <mat-form-field appearance="outline" class="category-field">
+      <mat-label>{{ lang.t('slot.category') }}</mat-label>
+      <mat-select [value]="category()" (selectionChange)="onCategoryChange($event.value)">
+        @for (cat of CATEGORIES; track cat) {
+          <mat-option [value]="cat">{{ lang.t('category.' + cat) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="indicator-field">
+      <mat-label>{{ lang.t('slot.indicator') }}</mat-label>
+      <mat-select [value]="indicatorId()" (selectionChange)="onIndicatorChange($event.value)">
+        @for (ind of indicatorsInCategory(); track ind.meta.id) {
+          <mat-option [value]="ind.meta.id">
+            <span class="ind-short">{{ ind.meta.shortName }}</span>
+            <span class="ind-name"> — {{ ind.meta.name }}</span>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Dynamic params -->
+  @if (currentDef()?.meta?.params?.length) {
+    <div class="params-row">
+      @for (param of currentDef()!.meta.params; track param.key) {
+
+        @if (param.type === 'number') {
+          <mat-form-field appearance="outline" class="param-field">
+            <mat-label>{{ lang.paramLabel(param.label) }}</mat-label>
+            <input
+              matInput
+              type="number"
+              [value]="paramValues()[param.key] ?? param.defaultValue"
+              [attr.min]="param.min"
+              [attr.max]="param.max"
+              [attr.step]="param.step ?? 1"
+              (change)="onParamChange(param.key, +$any($event.target).value)"
+              [matTooltip]="lang.paramDescription(indicatorId(), param.key, param.description ?? '')"
+            />
+          </mat-form-field>
+        }
+
+        @if (param.type === 'select') {
+          <mat-form-field appearance="outline" class="param-field">
+            <mat-label>{{ lang.paramLabel(param.label) }}</mat-label>
+            <mat-select
+              [value]="paramValues()[param.key] ?? param.defaultValue"
+              (selectionChange)="onParamChange(param.key, $event.value)"
+              [matTooltip]="lang.paramDescription(indicatorId(), param.key, param.description ?? '')"
+            >
+              @for (opt of param.options ?? []; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+        @if (param.type === 'boolean') {
+          <mat-slide-toggle
+            class="param-toggle"
+            [checked]="!!paramValues()[param.key]"
+            (change)="onParamChange(param.key, $event.checked)"
+            [matTooltip]="lang.paramDescription(indicatorId(), param.key, param.description ?? '')"
+          >
+            {{ lang.paramLabel(param.label) }}
+          </mat-slide-toggle>
+        }
+
+      }
+    </div>
+  }
+
+</div>

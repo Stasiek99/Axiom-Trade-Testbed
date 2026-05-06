@@ -40,7 +40,7 @@ import {
 
   // Momentum
   MACD, Momentum, ROC, BOP, BullBearPower, ElderForceIndex,
-  PriceOscillator, CoppockCurve, TRIX, KST, SqueezeMomentum,
+  PriceOscillator, CoppockCurve, TRIX, KnowSureThing, SqueezeMomentum,
   ImpulseMACD, MACD4C,
 
   // Trend
@@ -116,7 +116,7 @@ export function calcWMA(bars: Bar[], length = 14) {
 
 export function calcRMA(bars: Bar[], length = 14) {
   // Wilder's smoothed MA — used internally by ATR, RSI
-  return RMA.calculate(toOakBars(bars), { length });
+  return RMA.calculate(toOakBars(bars), { len: length, src: 'close' });
 }
 
 export function calcDEMA(bars: Bar[], length = 14) {
@@ -137,7 +137,7 @@ export function calcLSMA(bars: Bar[], length = 25, offset = 0) {
 }
 
 export function calcALMA(bars: Bar[], windowSize = 9, offset = 0.85, sigma = 6) {
-  return ALMA.calculate(toOakBars(bars), { windowSize, offset, sigma });
+  return ALMA.calculate(toOakBars(bars), { lengthInput: windowSize, offsetInput: offset, sigmaInput: sigma });
 }
 
 export function calcVWMA(bars: Bar[], length = 20) {
@@ -158,7 +158,7 @@ export function calcZLSMA(bars: Bar[], length = 32, offset = 0) {
 
 export function calcMACross(bars: Bar[], fastLen = 9, slowLen = 21) {
   // plot0: fast MA, plot1: slow MA, plot2: crossover signals
-  return MACross.calculate(toOakBars(bars), { fastLen, slowLen });
+  return MACross.calculate(toOakBars(bars), { shortLength: fastLen, longLength: slowLen });
 }
 
 export function calcMARibbon(bars: Bar[]) {
@@ -175,11 +175,11 @@ export function calcRSI(bars: Bar[], length = 14) {
 
 export function calcStochastic(bars: Bar[], length = 14, kSmoothing = 3, dSmoothing = 3) {
   // plot0: %K, plot1: %D
-  return Stochastic.calculate(toOakBars(bars), { length, kSmoothing, dSmoothing });
+  return Stochastic.calculate(toOakBars(bars), { periodK: length, smoothK: kSmoothing, periodD: dSmoothing });
 }
 
 export function calcStochRSI(bars: Bar[], length = 14, rsiLength = 14, kSmoothing = 3, dSmoothing = 3) {
-  return StochRSI.calculate(toOakBars(bars), { length, rsiLength, kSmoothing, dSmoothing });
+  return StochRSI.calculate(toOakBars(bars), { lengthStoch: length, lengthRSI: rsiLength, smoothK: kSmoothing, smoothD: dSmoothing });
 }
 
 export function calcCCI(bars: Bar[], length = 20) {
@@ -192,7 +192,7 @@ export function calcWilliamsR(bars: Bar[], length = 14) {
 
 export function calcAwesomeOscillator(bars: Bar[], shortLen = 5, longLen = 34) {
   // plot0: histogram (green/red columns)
-  return AwesomeOscillator.calculate(toOakBars(bars), { shortLen, longLen });
+  return AwesomeOscillator.calculate(toOakBars(bars), { fastPeriod: shortLen, slowPeriod: longLen });
 }
 
 export function calcChandeMO(bars: Bar[], length = 9) {
@@ -224,25 +224,25 @@ export function calcFisherTransform(bars: Bar[], length = 9) {
 }
 
 export function calcUltimateOscillator(bars: Bar[], len1 = 7, len2 = 14, len3 = 28) {
-  return UltimateOscillator.calculate(toOakBars(bars), { len1, len2, len3 });
+  return UltimateOscillator.calculate(toOakBars(bars), { length1: len1, length2: len2, length3: len3 });
 }
 
 export function calcWaveTrend(bars: Bar[], channelLen = 9, avgLen = 12) {
   // plot0: WT1, plot1: WT2
-  return WaveTrend.calculate(toOakBars(bars), { channelLen, avgLen });
+  return WaveTrend.calculate(toOakBars(bars), { channelLength: channelLen, averageLength: avgLen });
 }
 
 export function calcKDJ(bars: Bar[], length = 9, signalLength = 3) {
   // plot0: K, plot1: D, plot2: J
-  return KDJ.calculate(toOakBars(bars), { length, signalLength });
+  return KDJ.calculate(toOakBars(bars), { period: length, signal: signalLength });
 }
 
 export function calcConnorsRSI(bars: Bar[], rsiLen = 3, streakLen = 2, rankLen = 100) {
-  return ConnorsRSI.calculate(toOakBars(bars), { rsiLen, streakLen, rankLen });
+  return ConnorsRSI.calculate(toOakBars(bars), { lenrsi: rsiLen, lenupdown: streakLen, lenroc: rankLen });
 }
 
 export function calcRelativeVolatilityIndex(bars: Bar[], length = 14, smoothLen = 14) {
-  return RelativeVolatilityIndex.calculate(toOakBars(bars), { length, smoothLen });
+  return RelativeVolatilityIndex.calculate(toOakBars(bars), { length, maLength: smoothLen });
 }
 
 // ─── Momentum ────────────────────────────────────────────────────────────────
@@ -274,26 +274,26 @@ export function calcElderForceIndex(bars: Bar[], length = 13) {
 
 export function calcPPO(bars: Bar[], fastLength = 12, slowLength = 26, signalLength = 9) {
   // Price Oscillator (MACD as %)
-  return PriceOscillator.calculate(toOakBars(bars), { fastLength, slowLength, signalLength });
+  return PriceOscillator.calculate(toOakBars(bars), { shortLength: fastLength, longLength: slowLength, signalLength });
 }
 
 export function calcCoppockCurve(bars: Bar[], wmaLength = 10, roc1Length = 14, roc2Length = 11) {
-  return CoppockCurve.calculate(toOakBars(bars), { wmaLength, roc1Length, roc2Length });
+  return CoppockCurve.calculate(toOakBars(bars), { wmaLength, longRocLength: roc1Length, shortRocLength: roc2Length });
 }
 
-export function calcTRIX(bars: Bar[], length = 18, signalLength = 9) {
+export function calcTRIX(bars: Bar[], length = 18) {
   // plot0: TRIX, plot1: Signal
-  return TRIX.calculate(toOakBars(bars), { length, signalLength });
+  return TRIX.calculate(toOakBars(bars), { length });
 }
 
 export function calcKST(bars: Bar[]) {
   // Know Sure Thing — multi-ROC composite
-  return KST.calculate(toOakBars(bars), {});
+  return KnowSureThing.calculate(toOakBars(bars), {});
 }
 
 export function calcSqueezeMomentum(bars: Bar[], length = 20, mult = 2, lengthKC = 20, multKC = 1.5) {
   // Detects BB inside KC (squeeze), plot0: momentum histogram
-  return SqueezeMomentum.calculate(toOakBars(bars), { length, mult, lengthKC, multKC });
+  return SqueezeMomentum.calculate(toOakBars(bars), { bbLength: length, bbMult: mult, kcLength: lengthKC, kcMult: multKC });
 }
 
 export function calcImpulseMACD(bars: Bar[], lengthMA = 34, lengthSignal = 9) {
@@ -305,26 +305,26 @@ export function calcImpulseMACD(bars: Bar[], lengthMA = 34, lengthSignal = 9) {
 
 export function calcADX(bars: Bar[], length = 14) {
   // plot0: ADX, plot1: +DI, plot2: −DI
-  return ADX.calculate(toOakBars(bars), { length });
+  return ADX.calculate(toOakBars(bars), { diLength: length, adxSmoothing: length });
 }
 
 export function calcDMI(bars: Bar[], length = 14, adxSmoothing = 14) {
   // plot0: +DI, plot1: −DI, plot2: ADX
-  return DMI.calculate(toOakBars(bars), { length, adxSmoothing });
+  return DMI.calculate(toOakBars(bars), { diLength: length, adxSmoothing });
 }
 
 export function calcIchimoku(bars: Bar[], tenkanLength = 9, kijunLength = 26, chikouLength = 52) {
   // plot0: Tenkan, plot1: Kijun, plot2: SpanA, plot3: SpanB, plot4: Chikou
-  return IchimokuCloud.calculate(toOakBars(bars), { tenkanLength, kijunLength, chikouLength });
+  return IchimokuCloud.calculate(toOakBars(bars), { conversionPeriods: tenkanLength, basePeriods: kijunLength, laggingSpan2Periods: chikouLength });
 }
 
 export function calcParabolicSAR(bars: Bar[], step = 0.02, max = 0.2) {
-  return ParabolicSAR.calculate(toOakBars(bars), { step, max });
+  return ParabolicSAR.calculate(toOakBars(bars), { start: step, maximum: max });
 }
 
 export function calcSupertrend(bars: Bar[], period = 10, multiplier = 3) {
   // plot0: Supertrend line (directional color by trend)
-  return Supertrend.calculate(toOakBars(bars), { period, multiplier });
+  return Supertrend.calculate(toOakBars(bars), { atrPeriod: period, factor: multiplier });
 }
 
 export function calcAroon(bars: Bar[], length = 14) {
@@ -337,8 +337,8 @@ export function calcChoppiness(bars: Bar[], length = 14) {
   return Choppiness.calculate(toOakBars(bars), { length });
 }
 
-export function calcMassIndex(bars: Bar[], fastLength = 9, slowLength = 25) {
-  return MassIndex.calculate(toOakBars(bars), { fastLength, slowLength });
+export function calcMassIndex(bars: Bar[], fastLength = 9) {
+  return MassIndex.calculate(toOakBars(bars), { length: fastLength });
 }
 
 export function calcVortex(bars: Bar[], length = 14) {
@@ -351,22 +351,22 @@ export function calcWilliamsAlligator(bars: Bar[]) {
   return WilliamsAlligator.calculate(toOakBars(bars), {});
 }
 
-export function calcZigZag(bars: Bar[], depth = 12, deviation = 5, backstep = 3) {
-  return ZigZag.calculate(toOakBars(bars), { depth, deviation, backstep });
+export function calcZigZag(bars: Bar[], depth = 12, deviation = 5) {
+  return ZigZag.calculate(toOakBars(bars), { depth, deviation });
 }
 
 export function calcChandeKrollStop(bars: Bar[], p = 10, q = 15, x = 1) {
   // plot0: Stop Short, plot1: Stop Long
-  return ChandeKrollStop.calculate(toOakBars(bars), { p, q, x });
+  return ChandeKrollStop.calculate(toOakBars(bars), { atrLength: p, stopLength: q, atrCoeff: x });
 }
 
 export function calcCoralTrend(bars: Bar[], period = 21, cd = 0.4) {
-  return CoralTrend.calculate(toOakBars(bars), { period, cd });
+  return CoralTrend.calculate(toOakBars(bars), { smoothingPeriod: period, constantD: cd });
 }
 
 export function calcChandelierExit(bars: Bar[], period = 22, atrMultiplier = 3) {
   // plot0: Long stop, plot1: Short stop
-  return ChandelierExit.calculate(toOakBars(bars), { period, atrMultiplier });
+  return ChandelierExit.calculate(toOakBars(bars), { atrPeriod: period, atrMult: atrMultiplier });
 }
 
 export function calcTWAP(bars: Bar[]) {
@@ -379,8 +379,8 @@ export function calcATR(bars: Bar[], length = 14) {
   return ATR.calculate(toOakBars(bars), { length });
 }
 
-export function calcStdDev(bars: Bar[], length = 20, src = 'close') {
-  return StandardDeviation.calculate(toOakBars(bars), { length, src });
+export function calcStdDev(bars: Bar[], length = 20) {
+  return StandardDeviation.calculate(toOakBars(bars), { length });
 }
 
 export function calcHistoricalVolatility(bars: Bar[], length = 10) {
@@ -415,6 +415,12 @@ export function calcEnvelope(bars: Bar[], length = 20, percent = 0.1) {
   return Envelope.calculate(toOakBars(bars), { length, percent });
 }
 
+export function calcMedian(bars: Bar[], length = 3, atrLength = 14, atrMult = 2) {
+  // plot0: Median, plot1: Upper Band, plot2: Lower Band, plot3: Median EMA
+  // plot4: Median Above, plot5: Median Below
+  return Median.calculate(toOakBars(bars), { length, atrLength, atrMult });
+}
+
 // ─── Volume ──────────────────────────────────────────────────────────────────
 
 export function calcOBV(bars: Bar[]) {
@@ -439,7 +445,7 @@ export function calcChaikinMF(bars: Bar[], length = 20) {
 }
 
 export function calcChaikinOscillator(bars: Bar[], fastLength = 3, slowLength = 10) {
-  return ChaikinOscillator.calculate(toOakBars(bars), { fastLength, slowLength });
+  return ChaikinOscillator.calculate(toOakBars(bars), { fast: fastLength, slow: slowLength });
 }
 
 export function calcEaseOfMovement(bars: Bar[], length = 14) {
@@ -448,7 +454,7 @@ export function calcEaseOfMovement(bars: Bar[], length = 14) {
 
 export function calcKlingerOscillator(bars: Bar[], shortLength = 34, longLength = 55, signalLength = 13) {
   // plot0: KVO, plot1: Signal
-  return KlingerOscillator.calculate(toOakBars(bars), { shortLength, longLength, signalLength });
+  return KlingerOscillator.calculate(toOakBars(bars), { fastLength: shortLength, slowLength: longLength, signalLength });
 }
 
 export function calcCVD(bars: Bar[]) {
@@ -499,14 +505,14 @@ export function attachDemoIndicators(
     priceLineVisible: false,
     lastValueVisible: false,
   });
-  smaSeries.setData(smaResult.plots.plot0);
+  smaSeries.setData(smaResult.plots['plot0']);
 
   // — Bollinger Bands (price overlay) ───────────────────────────────────────
   const bbResult = BollingerBands.calculate(oak, { length: 20, mult: 2 });
   const bbLineOpts = { color: '#546E7A', lineWidth: 1, priceLineVisible: false, lastValueVisible: false } as const;
-  chart.addSeries(LineSeries, bbLineOpts).setData(bbResult.plots.plot0); // Upper
-  chart.addSeries(LineSeries, { ...bbLineOpts, color: '#78909C' }).setData(bbResult.plots.plot1!); // Basis
-  chart.addSeries(LineSeries, bbLineOpts).setData(bbResult.plots.plot2!); // Lower
+  chart.addSeries(LineSeries, bbLineOpts).setData(bbResult.plots['plot0']); // Upper
+  chart.addSeries(LineSeries, { ...bbLineOpts, color: '#78909C' }).setData(bbResult.plots['plot1']!); // Basis
+  chart.addSeries(LineSeries, bbLineOpts).setData(bbResult.plots['plot2']!); // Lower
 
   // — RSI (separate pane — create a second chart instance synced by time) ────
   // In production: create a second createChart() element below the main one

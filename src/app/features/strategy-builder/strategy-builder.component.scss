@@ -1,0 +1,120 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.builder-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────
+
+.builder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.name-field {
+  width: 220px;
+}
+
+.presets-btn {
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  mat-icon:first-child { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
+  mat-icon:last-child  { font-size: 18px; width: 18px; height: 18px; margin-left: -2px; opacity: 0.7; }
+}
+
+// ── Rule cards ────────────────────────────────────────────────────────────
+
+.rules-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rule-card {
+  background: #0f1117;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.entry-card { border-top: 2px solid rgba(0, 200, 83, 0.5); }
+.exit-card  { border-top: 2px solid rgba(255, 82, 82, 0.5); }
+
+// ── Risk card ─────────────────────────────────────────────────────────────
+
+.risk-card {
+  background: #0f1117;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 12px;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.risk-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.risk-field {
+  width: 160px;
+  flex: 0 0 auto;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────
+
+.actions-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.run-btn {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0 24px;
+  height: 40px;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
+}

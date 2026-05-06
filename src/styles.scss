@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@import 'katex/dist/katex.min.css';
 
 // Dark M3 theme — cyan primary, trading terminal aesthetic
 $dark-theme: mat.define-theme((
@@ -21,9 +22,47 @@ body {
   height: 100%;
   background-color: #0a0a0f;
   color: #e0e0e0;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Roboto', sans-serif;
 }
 
 * {
   box-sizing: border-box;
+}
+
+.lang-btn .mdc-button__label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.lang-menu-panel {
+  min-width: 168px !important;
+
+  .mat-mdc-menu-item-text {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .lang-flag {
+    width: 1.35em;
+    height: 1em;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .lang-name {
+    flex: 1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .lang-check {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: #4caf50;
+    margin-left: 12px;
+  }
 }

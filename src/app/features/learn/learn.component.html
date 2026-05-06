@@ -1,0 +1,72 @@
+<div class="learn-page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <div class="learn-header">
+    <h1 class="page-title">{{ lang.t('learn.title') }}</h1>
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>{{ lang.t('learn.searchPlaceholder') }}</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput (input)="searchQuery.set($any($event.target).value)" />
+    </mat-form-field>
+  </div>
+
+  <!-- ── Category filter ────────────────────────────────────────────────────── -->
+  <div class="category-strip">
+    <button
+      mat-flat-button
+      class="cat-btn"
+      data-cat="all"
+      [class.active]="selectedCategory() === null"
+      (click)="selectedCategory.set(null)"
+    >
+      {{ catLabel(null) }}
+    </button>
+    @for (cat of CATEGORIES; track cat) {
+      <button
+        mat-flat-button
+        class="cat-btn"
+        [attr.data-cat]="cat"
+        [class.active]="selectedCategory() === cat"
+        (click)="selectedCategory.set(cat)"
+      >
+        {{ catLabel(cat) }}
+      </button>
+    }
+  </div>
+
+  <!-- ── Results count ──────────────────────────────────────────────────────── -->
+  <p class="results-count">{{ filtered().length }}</p>
+
+  <!-- ── Accordion ──────────────────────────────────────────────────────────── -->
+  @if (filtered().length) {
+    <mat-accordion multi class="indicators-accordion">
+      @for (entry of filtered(); track entry.id) {
+        <mat-expansion-panel class="indicator-panel">
+
+          <mat-expansion-panel-header>
+            <mat-panel-title class="panel-title">
+              <code class="ind-id" [attr.data-cat]="entry.category">{{ entry.id.toUpperCase() }}</code>
+              <span class="ind-full">{{ entry.title }}</span>
+            </mat-panel-title>
+            <mat-panel-description class="panel-desc">
+              <span class="cat-badge" [attr.data-cat]="entry.category">{{ catLabel(entry.category) }}</span>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <!-- Lazy — only instantiates when the panel first opens -->
+          <ng-template matExpansionPanelContent>
+            <app-indicator-info [indicator]="entry" class="panel-info" />
+          </ng-template>
+
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
+  } @else {
+    <div class="no-results">
+      <mat-icon>search_off</mat-icon>
+      <span>{{ lang.t('learn.noResults') }}</span>
+    </div>
+  }
+
+</div>
