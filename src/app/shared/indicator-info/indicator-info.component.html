@@ -1,4 +1,4 @@
-<div class="indicator-info" (click)="closeLegend()">
+<div class="indicator-info" [attr.data-cat]="indicator().category" (click)="closeLegend()">
 
   <!-- ── Header ─────────────────────────────────────────────────────────────── -->
   <div class="indicator-header">
@@ -9,7 +9,7 @@
         target="_blank"
         rel="noopener noreferrer"
         class="learn-more-link"
-        matTooltip="Learn more on Google"
+        [matTooltip]="lang.t('learn.learnMoreTooltip')"
         (click)="$event.stopPropagation()"
       >
         <mat-icon class="info-icon">open_in_new</mat-icon>
@@ -23,7 +23,7 @@
 
   <!-- ── Formula ───────────────────────────────────────────────────────────── -->
   <section class="formula-section">
-    <h3 class="section-label">Formula</h3>
+    <h3 class="section-label">{{ lang.t('learn.formula') }}</h3>
     <div
       class="formula-container"
       (contextmenu)="onFormulaContextMenu($event)"
@@ -31,24 +31,24 @@
     ></div>
     <span class="formula-hint">
       <mat-icon class="hint-icon">mouse</mat-icon>
-      Right-click to see variable definitions
+      {{ lang.t('learn.formulaHint') }}
     </span>
   </section>
 
   <!-- ── Full description ───────────────────────────────────────────────────── -->
   <section class="full-desc-section">
-    <h3 class="section-label">How It Works</h3>
+    <h3 class="section-label">{{ lang.t('learn.howItWorks') }}</h3>
     <div class="desc-grid">
       <div class="desc-card">
-        <span class="desc-label">Assumes</span>
+        <span class="desc-label">{{ lang.t('learn.assumes') }}</span>
         <p class="desc-text">{{ resolved().fullDescription.assumptions }}</p>
       </div>
       <div class="desc-card">
-        <span class="desc-label">Shows</span>
+        <span class="desc-label">{{ lang.t('learn.shows') }}</span>
         <p class="desc-text">{{ resolved().fullDescription.whatItShows }}</p>
       </div>
       <div class="desc-card">
-        <span class="desc-label">Helps with</span>
+        <span class="desc-label">{{ lang.t('learn.helpsWith') }}</span>
         <p class="desc-text">{{ resolved().fullDescription.howItHelps }}</p>
       </div>
     </div>
@@ -57,13 +57,13 @@
   <!-- ── Parameters ────────────────────────────────────────────────────────── -->
   @if (indicator().parameters.length) {
     <section class="params-section">
-      <h3 class="section-label">Parameters</h3>
+      <h3 class="section-label">{{ lang.t('learn.parameters') }}</h3>
       <div class="param-list">
         @for (param of indicator().parameters; track param.symbol) {
           <div class="param-row">
             <code class="param-symbol">{{ param.symbol }}</code>
-            <span class="param-name">{{ param.name }}</span>
-            <span class="param-default">default: {{ param.defaultValue }}</span>
+            <span class="param-name">{{ lang.paramLabel(param.name) }}</span>
+            <span class="param-default">{{ lang.t('learn.default') }}: {{ param.defaultValue }}</span>
             <span class="param-desc">{{ param.description }}</span>
           </div>
         }
@@ -81,10 +81,10 @@
     [style.top.px]="legendY()"
     (click)="$event.stopPropagation()"
   >
-    <div class="legend-header">Formula Legend</div>
-    @for (entry of indicator().formulaLegend; track entry.symbol) {
+    <div class="legend-header">{{ lang.t('learn.formulaLegend') }}</div>
+    @for (entry of resolvedLegend(); track entry.symbol; let i = $index) {
       <div class="legend-row">
-        <code class="legend-symbol">{{ entry.symbol }}</code>
+        <span class="legend-symbol" [innerHTML]="legendSymbolHtmls()[i]"></span>
         <span class="legend-explanation">{{ entry.explanation }}</span>
       </div>
     }

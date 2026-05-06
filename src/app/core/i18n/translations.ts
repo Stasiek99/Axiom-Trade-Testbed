@@ -3,7 +3,7 @@ export type Lang = 'pl' | 'en';
 export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
   pl: {
     // ── Navigation ────────────────────────────────────────────────────────
-    'nav.dashboard': 'Panel',
+    'nav.dashboard': 'Wykres',
     'nav.strategy':  'Strategia',
 
     // ── Toolbar ───────────────────────────────────────────────────────────
@@ -78,6 +78,31 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'condition.price_above_middle':  'Cena jest powyżej środkowego pasma',
     'condition.price_below_middle':  'Cena jest poniżej środkowego pasma',
 
+    // ── Learn page ───────────────────────────────────────────────────────
+    'nav.learn':             'Edukacja',
+    'learn.title':           'Baza wskaźników',
+    'learn.searchPlaceholder': 'Szukaj wskaźnika...',
+    'learn.allCategories':   'Wszystkie',
+    'learn.formula':         'Wzór',
+    'learn.formulaHint':     'Kliknij prawym przyciskiem, aby zobaczyć definicje zmiennych',
+    'learn.howItWorks':      'Jak działa',
+    'learn.assumes':         'Zakłada',
+    'learn.shows':           'Pokazuje',
+    'learn.helpsWith':       'Pomaga z',
+    'learn.parameters':      'Parametry',
+    'learn.formulaLegend':   'Legenda wzoru',
+    'learn.learnMoreTooltip': 'Więcej informacji w Google',
+    'learn.default':         'domyślnie',
+    'learn.noResults':       'Brak wyników dla wybranego filtra',
+    'learn.learnMore':       'Dowiedz się więcej',
+    'learn.cat.moving_average': 'Średnie kroczące',
+    'learn.cat.oscillator':  'Oscylatory',
+    'learn.cat.momentum':    'Momentum',
+    'learn.cat.trend':       'Trend',
+    'learn.cat.volatility':  'Zmienność',
+    'learn.cat.channels_bands': 'Kanały i pasma',
+    'learn.cat.volume':      'Wolumen',
+
     // ── Indicator param labels ────────────────────────────────────────────
     'param.period':          'Okres',
     'param.fast_period':     'Szybki okres',
@@ -100,7 +125,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
   en: {
     // ── Navigation ────────────────────────────────────────────────────────
-    'nav.dashboard': 'Dashboard',
+    'nav.dashboard': 'Chart',
     'nav.strategy':  'Strategy',
 
     // ── Toolbar ───────────────────────────────────────────────────────────
@@ -174,6 +199,31 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'condition.price_below_lower':   'Price is below lower band',
     'condition.price_above_middle':  'Price is above middle band',
     'condition.price_below_middle':  'Price is below middle band',
+
+    // ── Learn page ───────────────────────────────────────────────────────
+    'nav.learn':             'Learn',
+    'learn.title':           'Indicator Library',
+    'learn.searchPlaceholder': 'Search indicators...',
+    'learn.allCategories':   'All',
+    'learn.formula':         'Formula',
+    'learn.formulaHint':     'Right-click to see variable definitions',
+    'learn.howItWorks':      'How It Works',
+    'learn.assumes':         'Assumes',
+    'learn.shows':           'Shows',
+    'learn.helpsWith':       'Helps with',
+    'learn.parameters':      'Parameters',
+    'learn.formulaLegend':   'Formula Legend',
+    'learn.learnMoreTooltip': 'Learn more on Google',
+    'learn.default':         'default',
+    'learn.noResults':       'No results for the selected filter',
+    'learn.learnMore':       'Learn more',
+    'learn.cat.moving_average': 'Moving Averages',
+    'learn.cat.oscillator':  'Oscillators',
+    'learn.cat.momentum':    'Momentum',
+    'learn.cat.trend':       'Trend',
+    'learn.cat.volatility':  'Volatility',
+    'learn.cat.channels_bands': 'Channels & Bands',
+    'learn.cat.volume':      'Volume',
 
     // ── Indicator param labels ────────────────────────────────────────────
     'param.period':          'Period',

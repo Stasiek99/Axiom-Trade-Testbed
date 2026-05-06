@@ -5,22 +5,22 @@
 }
 
 .app-toolbar {
-  font-family: monospace;
-  letter-spacing: 0.05em;
   flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .brand {
+  font-family: monospace;
   font-weight: 700;
-  font-size: 1.35rem;
+  font-size: 1.7rem;
   letter-spacing: 0.14em;
 }
 
 .brand-sub {
-  font-size: 0.7rem;
-  opacity: 0.45;
-  margin-left: 0.5rem;
+  font-family: monospace;
+  font-size: 1rem;
+  opacity: 0.55;
+  margin-left: 0.6rem;
   align-self: center;
 }
 
@@ -59,10 +59,8 @@
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 20px;
   color: #fff;
-  font-family: monospace;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  font-weight: 600;
   line-height: 1;
 
   .fi {
@@ -73,7 +71,8 @@
   }
 
   .lang-code {
-    font-size: 0.72rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
   }
 
   mat-icon {
@@ -84,4 +83,3 @@
     opacity: 0.7;
   }
 }
-

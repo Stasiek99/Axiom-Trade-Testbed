@@ -9,4 +9,10 @@ export const routes: Routes = [
       import('./features/strategy-builder/strategy-builder.component')
         .then(m => m.StrategyBuilderComponent),
   },
+  {
+    path: 'learn',
+    loadComponent: () =>
+      import('./features/learn/learn.component')
+        .then(m => m.LearnComponent),
+  },
 ];

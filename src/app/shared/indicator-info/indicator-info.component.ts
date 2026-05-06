@@ -29,7 +29,7 @@ export class IndicatorInfoComponent {
   protected legendY = signal(0);
 
   private sanitizer = inject(DomSanitizer);
-  private lang = inject(LangService);
+  protected lang = inject(LangService);
 
   protected resolved = computed(() => {
     const ind = this.indicator();
@@ -43,6 +43,17 @@ export class IndicatorInfoComponent {
     });
     return this.sanitizer.bypassSecurityTrustHtml(html);
   });
+
+  protected legendSymbolHtmls = computed<SafeHtml[]>(() =>
+    this.indicator().formulaLegend.map(e => {
+      const html = katex.renderToString(e.symbol, { throwOnError: false, displayMode: false });
+      return this.sanitizer.bypassSecurityTrustHtml(html);
+    })
+  );
+
+  protected resolvedLegend = computed(() =>
+    this.lang.resolveFormulaLegend(this.indicator().id, this.indicator().formulaLegend)
+  );
 
   protected learnMoreUrl = computed(() => {
     const q = encodeURIComponent(this.indicator().title + ' trading indicator');

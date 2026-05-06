@@ -1,7 +1,18 @@
+// ── Category color palette ──────────────────────────────────────────────────
+
+$cat-colors: (
+  'Moving Average':   #a78bfa,
+  'Oscillator':       #38bdf8,
+  'Momentum':         #fb923c,
+  'Trend':            #34d399,
+  'Volatility':       #fbbf24,
+  'Channels & Bands': #f472b6,
+  'Volume':           #2dd4bf,
+);
+
 :host {
   display: block;
   position: relative;
-  font-family: 'Courier New', Courier, monospace;
 }
 
 // ── Layout ─────────────────────────────────────────────────────────────────
@@ -12,7 +23,7 @@
   border: 1px solid #1e2030;
   border-radius: 8px;
   max-width: 680px;
-  color: #c9d1d9;
+  color: #d4d8e0;
 }
 
 // ── Header ─────────────────────────────────────────────────────────────────
@@ -31,7 +42,7 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #e6edf3;
+  color: #f0f2f5;
   letter-spacing: 0.03em;
   line-height: 1.4;
 }
@@ -39,7 +50,7 @@
 .learn-more-link {
   display: inline-flex;
   align-items: center;
-  color: #00bcd4;
+  color: #a78bfa;
   flex-shrink: 0;
   opacity: 0.7;
   transition: opacity 0.15s;
@@ -64,18 +75,44 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: #1e2030;
-  color: #00bcd4;
-  border: 1px solid #00bcd430;
+  background: rgba(167, 139, 250, 0.1);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.25);
+}
+
+@each $cat, $color in $cat-colors {
+  .indicator-info[data-cat="#{$cat}"] {
+    .category-badge {
+      background: rgba($color, 0.1);
+      color: $color;
+      border-color: rgba($color, 0.25);
+    }
+
+    .learn-more-link {
+      color: $color;
+    }
+
+    .formula-container:hover {
+      border-color: rgba($color, 0.35);
+    }
+
+    .desc-card {
+      border-left-color: rgba($color, 0.4);
+    }
+
+    .desc-label {
+      color: $color;
+    }
+  }
 }
 
 // ── Short description ───────────────────────────────────────────────────────
 
 .short-desc {
   margin: 12px 0 20px;
-  font-size: 0.82rem;
-  line-height: 1.6;
-  color: #8b949e;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #c0c8d4;
 }
 
 // ── Section heading ─────────────────────────────────────────────────────────
@@ -86,7 +123,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #484f58;
+  color: #5a6070;
 }
 
 // ── Formula ─────────────────────────────────────────────────────────────────
@@ -105,12 +142,11 @@
   transition: border-color 0.15s;
 
   &:hover {
-    border-color: #00bcd440;
+    border-color: rgba(167, 139, 250, 0.35);
   }
 
-  // KaTeX override — match dark theme
   :global(.katex) {
-    color: #e6edf3;
+    color: #f0f2f5;
     font-size: 1rem;
   }
 }
@@ -120,8 +156,8 @@
   align-items: center;
   gap: 4px;
   margin-top: 6px;
-  font-size: 0.68rem;
-  color: #484f58;
+  font-size: 0.7rem;
+  color: #5a6070;
 
   .hint-icon {
     font-size: 13px;
@@ -144,7 +180,7 @@
 .desc-card {
   padding: 10px 12px;
   background: #161b22;
-  border-left: 3px solid #1e2030;
+  border-left: 3px solid rgba(167, 139, 250, 0.4);
   border-radius: 0 4px 4px 0;
 }
 
@@ -154,15 +190,15 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #00bcd4;
+  color: #a78bfa;
   margin-bottom: 4px;
 }
 
 .desc-text {
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.55;
-  color: #8b949e;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #c0c8d4;
 }
 
 // ── Parameters ───────────────────────────────────────────────────────────────
@@ -193,29 +229,29 @@
 .param-symbol {
   grid-row: 1 / 3;
   font-size: 0.85rem;
-  color: #79c0ff;
+  color: #93c5fd;
   font-weight: 600;
   align-self: center;
   justify-self: center;
 }
 
 .param-name {
-  font-size: 0.78rem;
-  color: #c9d1d9;
+  font-size: 0.85rem;
+  color: #e2e8f0;
   font-weight: 600;
 }
 
 .param-default {
-  font-size: 0.72rem;
-  color: #484f58;
+  font-size: 0.75rem;
+  color: #5a6070;
   justify-self: end;
 }
 
 .param-desc {
   grid-column: 2 / 4;
-  font-size: 0.72rem;
-  color: #6e7681;
-  line-height: 1.4;
+  font-size: 0.8rem;
+  color: #9aa3b0;
+  line-height: 1.5;
 }
 
 // ── Formula Legend Popover ────────────────────────────────────────────────────
@@ -223,8 +259,8 @@
 .formula-legend-popover {
   position: fixed;
   z-index: 1000;
-  min-width: 280px;
-  max-width: 420px;
+  min-width: 300px;
+  max-width: 460px;
   background: #1c2128;
   border: 1px solid #30363d;
   border-radius: 8px;
@@ -244,7 +280,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #484f58;
+  color: #5a6070;
   border-bottom: 1px solid #21262d;
   background: #161b22;
 }
@@ -252,9 +288,9 @@
 .legend-row {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  padding: 8px 12px;
-  border-bottom: 1px solid #21262d10;
+  gap: 14px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 
   &:last-child {
     border-bottom: none;
@@ -263,14 +299,17 @@
 
 .legend-symbol {
   flex-shrink: 0;
-  font-size: 0.8rem;
-  color: #79c0ff;
-  font-weight: 600;
-  min-width: 60px;
+  min-width: 72px;
+
+  // KaTeX output inherits app font; override to match desired size
+  :global(.katex) {
+    font-size: 0.92rem;
+    color: #93c5fd;
+  }
 }
 
 .legend-explanation {
-  font-size: 0.78rem;
-  color: #8b949e;
-  line-height: 1.4;
+  font-size: 0.83rem;
+  color: #c0c8d4;
+  line-height: 1.45;
 }

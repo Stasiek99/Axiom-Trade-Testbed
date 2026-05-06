@@ -31,7 +31,6 @@
 }
 
 .symbol {
-  font-family: monospace;
   font-weight: 700;
   font-size: 1rem;
   color: #d1d4dc;
@@ -53,9 +52,9 @@
 
 .tf-group {
   --mat-standard-button-toggle-height: 26px;
-  font-family: monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .chart-canvas {
