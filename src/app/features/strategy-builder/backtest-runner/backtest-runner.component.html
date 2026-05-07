@@ -5,7 +5,7 @@
 
     <mat-form-field appearance="outline" class="ctrl-field">
       <mat-label>{{ lang.t('backtest.symbol') }}</mat-label>
-      <mat-select [(value)]="symbol" [disabled]="store.isRunning()">
+      <mat-select [value]="store.symbol()" [disabled]="store.isRunning()" (selectionChange)="onSymbolChange($event.value)">
         @for (s of SYMBOLS; track s) {
           <mat-option [value]="s">{{ s }}</mat-option>
         }
@@ -14,7 +14,7 @@
 
     <mat-form-field appearance="outline" class="ctrl-field">
       <mat-label>{{ lang.t('backtest.timeframe') }}</mat-label>
-      <mat-select [(value)]="timeframe" [disabled]="store.isRunning()">
+      <mat-select [value]="store.timeframe()" [disabled]="store.isRunning()" (selectionChange)="onTimeframeChange($event.value)">
         @for (tf of TIMEFRAMES; track tf) {
           <mat-option [value]="tf">{{ tf }}</mat-option>
         }

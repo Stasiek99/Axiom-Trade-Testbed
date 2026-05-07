@@ -19,7 +19,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'strategy.backtestPhase4': 'Backtest dostępny w Fazie 4',
 
     // ── Backtest Runner ───────────────────────────────────────────────────
-    'backtest.run':          'Uruchom',
+    'backtest.run':          'Uruchom i zapisz',
     'backtest.running':      'Trwa...',
     'backtest.stop':         'Zatrzymaj',
     'backtest.reset':        'Wyczyść',
@@ -50,7 +50,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'backtest.drawdown':      'Drawdown',
     'backtest.tradeLog':      'Dziennik transakcji',
     'backtest.exportTrades':  'Transakcje CSV',
-    'backtest.exportEquity':  'Krzywa CSV',
     'backtest.entryTime':     'Czas wejścia',
     'backtest.entryPrice':    'Cena wejścia',
     'backtest.exitTime':      'Czas wyjścia',
@@ -66,6 +65,12 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'statistics.emptyHint':   'Uruchom backtest w Kreatorze Strategii, aby zobaczyć statystyki.',
     'statistics.goToStrategy':'Kreator Strategii',
     'strategy.viewStats':     'Zobacz statystyki',
+
+    // ── History sidebar ───────────────────────────────────────────────────
+    'history.title':    'Historia',
+    'history.empty':    'Brak zapisanych backtestów',
+    'history.clearAll': 'Wyczyść historię',
+    'history.delete':   'Usuń',
 
     'strategy.entryCondition': 'Warunek Wejścia',
     'strategy.exitCondition':  'Warunek Wyjścia',
@@ -128,6 +133,9 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'condition.price_below_lower':   'Cena jest poniżej dolnego pasma',
     'condition.price_above_middle':  'Cena jest powyżej środkowego pasma',
     'condition.price_below_middle':  'Cena jest poniżej środkowego pasma',
+
+    // ── Chart ────────────────────────────────────────────────────────────
+    'chart.priceChangeSince': 'Zmiana od zamknięcia poprzedniej świecy',
 
     // ── Learn page ───────────────────────────────────────────────────────
     'nav.learn':             'Edukacja',
@@ -192,7 +200,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'strategy.backtestPhase4': 'Backtest coming in Phase 4',
 
     // ── Backtest Runner ───────────────────────────────────────────────────
-    'backtest.run':          'Run',
+    'backtest.run':          'Run & Save',
     'backtest.running':      'Running...',
     'backtest.stop':         'Stop',
     'backtest.reset':        'Clear',
@@ -223,7 +231,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'backtest.drawdown':      'Drawdown',
     'backtest.tradeLog':      'Trade Log',
     'backtest.exportTrades':  'Trades CSV',
-    'backtest.exportEquity':  'Equity CSV',
     'backtest.entryTime':     'Entry Time',
     'backtest.entryPrice':    'Entry Price',
     'backtest.exitTime':      'Exit Time',
@@ -239,6 +246,12 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'statistics.emptyHint':   'Run a backtest in the Strategy Builder to see statistics.',
     'statistics.goToStrategy':'Strategy Builder',
     'strategy.viewStats':     'View Statistics',
+
+    // ── History sidebar ───────────────────────────────────────────────────
+    'history.title':    'History',
+    'history.empty':    'No saved backtests',
+    'history.clearAll': 'Clear history',
+    'history.delete':   'Delete',
 
     'strategy.entryCondition': 'Entry Condition',
     'strategy.exitCondition':  'Exit Condition',
@@ -301,6 +314,9 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'condition.price_below_lower':   'Price is below lower band',
     'condition.price_above_middle':  'Price is above middle band',
     'condition.price_below_middle':  'Price is below middle band',
+
+    // ── Chart ────────────────────────────────────────────────────────────
+    'chart.priceChangeSince': 'Change since previous candle close',
 
     // ── Learn page ───────────────────────────────────────────────────────
     'nav.learn':             'Learn',

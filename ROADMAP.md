@@ -214,15 +214,15 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 ### Phase 5.5 — Backtest Result Persistence
 **Goal:** Backtest runs survive page reloads; users can compare past results.
 
-- [ ] Create a `BacktestHistoryService` using IndexedDB (via `idb-keyval` or raw IndexedDB) to persist:
+- [x] Create a `BacktestHistoryService` using IndexedDB (via `idb-keyval` or raw IndexedDB) to persist:
   - Strategy config snapshot (params, indicators, time range)
   - Summary stats (PnL, win rate, Sharpe, max drawdown)
   - Full trade log array
   - Equity curve data points
-- [ ] Run history sidebar: list of past runs sorted by date, showing symbol + strategy name + net PnL at a glance
-- [ ] Click a historical run → re-populate stats panel, trade log, and chart markers (reconstruct equity curve series)
-- [ ] "Delete run" and "Clear all history" actions
-- [ ] `BacktestStore` initializes from IndexedDB on app startup
+- [x] Run history sidebar: list of past runs sorted by date, showing symbol + strategy name + net PnL at a glance
+- [x] Click a historical run → re-populate stats panel, trade log, and chart markers (reconstruct equity curve series)
+- [x] "Delete run" and "Clear all history" actions
+- [x] `BacktestStore` initializes from IndexedDB on app startup
 
 **Deliverable:** Refresh the page after a backtest — results are still there.
 

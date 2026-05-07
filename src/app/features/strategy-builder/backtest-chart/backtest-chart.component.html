@@ -6,6 +6,12 @@
       <div class="card-header">
         <mat-icon class="header-icon">stacked_line_chart</mat-icon>
         <span>{{ lang.t('backtest.indicatorChart') }}</span>
+        @if (store.symbol(); as sym) {
+          <span class="context-badge">
+            <span class="ctx-symbol">{{ sym }}</span>
+            <span class="ctx-tf">{{ store.timeframe() }}</span>
+          </span>
+        }
         @if (showClearBtn) {
           <button
             mat-icon-button

@@ -1,0 +1,47 @@
+<div class="history-sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">{{ lang.t('history.title') }}</span>
+    @if (store.history().length > 0) {
+      <button
+        mat-icon-button
+        class="clear-btn"
+        (click)="clearAll()"
+        [matTooltip]="lang.t('history.clearAll')"
+      >
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    }
+  </div>
+
+  @if (store.history().length === 0) {
+    <p class="empty-history">{{ lang.t('history.empty') }}</p>
+  } @else {
+    <ul class="run-list">
+      @for (run of store.history(); track run.id) {
+        <li class="run-item" (click)="load(run)">
+          <div class="run-top">
+            <span class="run-symbol">{{ run.symbol }}</span>
+            <span class="run-tf">{{ run.timeframe }}</span>
+            <span
+              class="run-pnl"
+              [class.positive]="run.result.netPnl >= 0"
+              [class.negative]="run.result.netPnl < 0"
+            >{{ fmtPnl(run.result.netPnl) }}$</span>
+          </div>
+          <div class="run-bottom">
+            <span class="run-name">{{ run.strategyConfig.name }}</span>
+            <span class="run-date">{{ run.runAt | date:'dd.MM HH:mm' }}</span>
+          </div>
+          <button
+            mat-icon-button
+            class="del-btn"
+            (click)="deleteRun(run.id, $event)"
+            [matTooltip]="lang.t('history.delete')"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>

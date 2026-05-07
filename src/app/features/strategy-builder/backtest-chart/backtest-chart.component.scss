@@ -27,6 +27,30 @@
     color:     #22d3ee;
   }
 
+  .context-badge {
+    display:     flex;
+    align-items: center;
+    gap:         5px;
+    margin-left: 4px;
+  }
+
+  .ctx-symbol {
+    font-size:   0.75rem;
+    font-weight: 700;
+    color:       rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.04em;
+  }
+
+  .ctx-tf {
+    font-size:     0.68rem;
+    font-weight:   600;
+    color:         rgba(255, 255, 255, 0.4);
+    padding:       1px 5px;
+    border:        1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+
   .clear-btn {
     margin-left: auto;
     width:       36px;

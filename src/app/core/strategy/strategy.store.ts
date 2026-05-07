@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, effect, signal } from '@angular/core';
 import type { StrategyConfig } from './strategy.model';
 
 const EMA_CROSS: StrategyConfig = {
@@ -161,8 +161,27 @@ export const STRATEGY_PRESETS: StrategyConfig[] = [
 
 @Injectable({ providedIn: 'root' })
 export class StrategyStore {
+  private static readonly SESSION_KEY = 'axiom:strategy';
+
   private readonly _config = signal<StrategyConfig>(EMA_CROSS);
   readonly config = this._config.asReadonly();
+
+  constructor() {
+    this.restoreSession();
+    effect(() => sessionStorage.setItem(StrategyStore.SESSION_KEY, JSON.stringify(this._config())));
+  }
+
+  private restoreSession(): void {
+    try {
+      const raw = sessionStorage.getItem(StrategyStore.SESSION_KEY);
+      if (raw) this._config.set(JSON.parse(raw) as StrategyConfig);
+    } catch { /* corrupt data — ignore */ }
+  }
+
+  reset(): void {
+    sessionStorage.removeItem(StrategyStore.SESSION_KEY);
+    this._config.set(EMA_CROSS);
+  }
 
   set(config: StrategyConfig): void {
     this._config.set(config);
