@@ -1,0 +1,138 @@
+.trade-log-card {
+  background:     #0f1117;
+  border:         1px solid #1e2030;
+  border-radius:  8px;
+  padding:        16px 20px;
+  display:        flex;
+  flex-direction: column;
+  gap:            12px;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+.card-header {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+  font-size:   0.78rem;
+  font-weight: 700;
+  color:       #d4d8e0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-wrap:   wrap;
+
+  .header-icon {
+    font-size: 16px;
+    width:     16px;
+    height:    16px;
+    color:     #22d3ee;
+  }
+}
+
+.export-group {
+  display:     flex;
+  gap:         6px;
+  margin-left: auto;
+}
+
+.export-btn {
+  font-size:   0.72rem;
+  font-weight: 600;
+  height:      32px;
+  line-height: 32px;
+  padding:     0 10px;
+  border-color: rgba(34, 211, 238, 0.3);
+  color:        #22d3ee;
+
+  mat-icon {
+    font-size: 14px;
+    width:     14px;
+    height:    14px;
+    margin-right: 4px;
+  }
+
+  &:hover { border-color: #22d3ee; }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.table-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 320px;
+  border:         1px solid #21262d;
+  border-radius:  6px;
+
+  &::-webkit-scrollbar       { width: 5px; height: 5px; }
+  &::-webkit-scrollbar-track { background: #0f1117; }
+  &::-webkit-scrollbar-thumb { background: #21262d; border-radius: 3px; }
+}
+
+.trade-table {
+  width:           100%;
+  border-collapse: collapse;
+  font-size:       0.75rem;
+  font-family:     'Courier New', monospace;
+  white-space:     nowrap;
+
+  thead tr {
+    position:   sticky;
+    top:        0;
+    background: #161b22;
+    z-index:    1;
+  }
+
+  th {
+    padding:        7px 10px;
+    text-align:     left;
+    font-size:      0.62rem;
+    font-weight:    700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color:          #5a6070;
+    border-bottom:  1px solid #21262d;
+  }
+
+  td {
+    padding:       6px 10px;
+    border-bottom: 1px solid #161b22;
+    color:         #9db2bd;
+  }
+
+  tbody tr {
+    transition: background 0.1s;
+    &:hover { background: rgba(255,255,255,0.025); }
+    &:last-child td { border-bottom: none; }
+  }
+
+  .row-win { background: rgba(52, 211, 153, 0.04); }
+  .row-loss { background: rgba(248, 113, 113, 0.04); }
+}
+
+// ── Cell helpers ──────────────────────────────────────────────────────────────
+
+.col-num   { text-align: center; width: 40px; }
+.col-price { text-align: right; }
+.col-pnl   { text-align: right; font-weight: 600; }
+
+.mono  { font-family: 'Courier New', monospace; }
+.muted { color: #5a6070; }
+
+.win  { color: #34d399; }
+.loss { color: #f87171; }
+
+.reason-badge {
+  display:       inline-block;
+  padding:       2px 7px;
+  border-radius: 3px;
+  font-size:     0.65rem;
+  font-weight:   700;
+  letter-spacing: 0.05em;
+  background:    rgba(34, 211, 238, 0.12);
+  color:         #22d3ee;
+
+  &.forced {
+    background: rgba(251, 146, 60, 0.12);
+    color:      #fb923c;
+  }
+}

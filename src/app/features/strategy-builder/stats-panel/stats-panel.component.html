@@ -1,0 +1,63 @@
+@if (store.result(); as r) {
+  @if (r.totalTrades > 0) {
+    <div class="stats-panel">
+
+      <div class="panel-header">
+        <mat-icon class="header-icon">bar_chart</mat-icon>
+        <span>{{ lang.t('backtest.statsTitle') }}</span>
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.netPnl') }}</span>
+          <span class="stat-value" [class.positive]="r.netPnl > 0" [class.negative]="r.netPnl < 0">
+            {{ fmtPnl(r.netPnl) }}
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.trades') }}</span>
+          <span class="stat-value">{{ r.totalTrades }}</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.winRate') }}</span>
+          <span class="stat-value" [class.positive]="r.winRate >= 50">{{ fmt(r.winRate) }}%</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.profitFactor') }}</span>
+          <span class="stat-value" [class.positive]="r.profitFactor > 1" [class.negative]="r.profitFactor < 1 && r.profitFactor > 0">
+            {{ fmtPf(r.profitFactor) }}
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.totalReturn') }}</span>
+          <span class="stat-value" [class.positive]="r.totalReturn > 0" [class.negative]="r.totalReturn < 0">
+            {{ r.totalReturn > 0 ? '+' : '' }}{{ fmt(r.totalReturn) }}%
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.maxDrawdown') }}</span>
+          <span class="stat-value negative">-{{ fmt(r.maxDrawdown) }}%</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.sharpeRatio') }}</span>
+          <span class="stat-value" [class.positive]="r.sharpeRatio > 1" [class.negative]="r.sharpeRatio < 0">
+            {{ fmt(r.sharpeRatio) }}
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.avgDuration') }}</span>
+          <span class="stat-value">{{ fmt(r.avgTradeDuration, 1) }} {{ lang.t('backtest.bars') }}</span>
+        </div>
+
+      </div>
+    </div>
+  }
+}

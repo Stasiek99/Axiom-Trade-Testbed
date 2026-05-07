@@ -3,8 +3,10 @@ export interface TradeResult {
   exitTime:   number;
   entryPrice: number;
   exitPrice:  number;
-  pnl:        number;   // absolute $ P&L after costs
-  pnlPct:     number;   // % P&L relative to position cost
+  pnl:        number;         // absolute $ P&L after costs
+  pnlPct:     number;         // % P&L relative to position cost
+  barsHeld:   number;         // number of bars the position was open
+  exitReason: 'signal' | 'forced';  // forced = end-of-data close
 }
 
 export interface EquityPoint {
@@ -25,15 +27,19 @@ export interface IndicatorSeries {
 }
 
 export interface BacktestResult {
-  trades:         TradeResult[];
-  equityCurve:    EquityPoint[];
-  indicators:     IndicatorSeries[];
-  totalReturn:    number;   // % return from initialCapital
-  maxDrawdown:    number;   // % max peak-to-trough drawdown
-  winRate:        number;   // % of closed trades that were profitable
-  totalTrades:    number;
-  initialCapital: number;
-  finalCapital:   number;
+  trades:           TradeResult[];
+  equityCurve:      EquityPoint[];
+  indicators:       IndicatorSeries[];
+  totalReturn:      number;   // % return from initialCapital
+  maxDrawdown:      number;   // % max peak-to-trough drawdown
+  winRate:          number;   // % of closed trades that were profitable
+  totalTrades:      number;
+  initialCapital:   number;
+  finalCapital:     number;
+  netPnl:           number;   // finalCapital − initialCapital
+  profitFactor:     number;   // grossProfit / grossLoss (Infinity when no losses)
+  sharpeRatio:      number;   // annualised bar-by-bar Sharpe (√252 convention)
+  avgTradeDuration: number;   // mean bars held per trade
 }
 
 export type BacktestStatus = 'idle' | 'running' | 'done' | 'error';

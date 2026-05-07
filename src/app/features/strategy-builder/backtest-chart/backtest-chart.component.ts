@@ -7,7 +7,7 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { createChart, LineSeries, createSeriesMarkers } from 'lightweight-charts';
+import { createChart, LineSeries, AreaSeries, createSeriesMarkers } from 'lightweight-charts';
 import type { UTCTimestamp } from 'lightweight-charts';
 
 import { BacktestStore } from '../../../core/backtest/backtest.store';
@@ -24,6 +24,7 @@ import type { BacktestResult, IndicatorRole, IndicatorSeries } from '../../../co
 })
 export class BacktestChartComponent implements AfterViewInit {
   @Input() showViewBtn  = false;
+  @Input() showStatsBtn = false;
   @Input() showClearBtn = false;
 
   protected readonly store     = inject(BacktestStore);
@@ -33,10 +34,13 @@ export class BacktestChartComponent implements AfterViewInit {
   // Available when rendered inside ChartComponent; null in strategy-builder (standalone mode).
   private  readonly mainChart  = inject(ChartService, { optional: true });
 
-  @ViewChild('container') containerRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('container')         containerRef!:        ElementRef<HTMLDivElement>;
+  @ViewChild('drawdownContainer') drawdownContainerRef?: ElementRef<HTMLDivElement>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private chart:   any = null;   // used only in standalone mode
+  private chart:          any = null;   // indicator lines chart (standalone mode)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private drawdownChart:  any = null;   // drawdown mini-chart (standalone mode)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private series:  any[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,8 +69,11 @@ export class BacktestChartComponent implements AfterViewInit {
       if (this.mainChart) {
         const ch = this.mainChart.getChart();
         for (const s of this.series) { try { ch?.removeSeries(s); } catch { /* removed */ } }
+        this.mainChart.clearTradeMarkers();
         this.mainChart.removeIndicatorPane();
       } else {
+        this.drawdownChart?.remove();
+        this.drawdownChart = null;
         this.chart?.remove();
         this.chart = null;
       }
@@ -75,6 +82,10 @@ export class BacktestChartComponent implements AfterViewInit {
 
   goToChart(): void {
     this.router.navigate(['/']);
+  }
+
+  goToStats(): void {
+    this.router.navigate(['/statistics']);
   }
 
   clearStrategy(): void {
@@ -128,8 +139,11 @@ export class BacktestChartComponent implements AfterViewInit {
 
     if (!result || !indicators.length) {
       if (this.mainChart) {
+        this.mainChart.clearTradeMarkers();
         this.mainChart.removeIndicatorPane();
       } else {
+        this.drawdownChart?.remove();
+        this.drawdownChart = null;
         this.chart?.remove();
         this.chart = null;
       }
@@ -230,5 +244,62 @@ export class BacktestChartComponent implements AfterViewInit {
     if (paneIdx === 0) {
       workChart.timeScale().fitContent();
     }
+
+    // Pane mode: render ▲/▼ markers directly on the candlestick series.
+    if (this.mainChart) {
+      this.mainChart.setTradeMarkers(result.trades);
+    }
+
+    // Standalone mode: render drawdown mini-chart below indicator lines.
+    if (!this.mainChart) {
+      this.renderStandaloneDrawdown(result);
+    }
+  }
+
+  private renderStandaloneDrawdown(result: BacktestResult | null): void {
+    this.drawdownChart?.remove();
+    this.drawdownChart = null;
+
+    if (!result?.equityCurve.length) return;
+
+    setTimeout(() => {
+      if (!this.drawdownContainerRef?.nativeElement) return;
+
+      let peak = result.equityCurve[0].value;
+      const ddData = result.equityCurve.map(p => {
+        if (p.value > peak) peak = p.value;
+        const dd = peak > 0 ? (peak - p.value) / peak * 100 : 0;
+        return { time: p.time as UTCTimestamp, value: -dd };
+      });
+
+      this.drawdownChart = createChart(this.drawdownContainerRef!.nativeElement, {
+        layout: {
+          background:  { color: '#0d1117' },
+          textColor:   '#9db2bd',
+          fontFamily:  'Courier New, monospace',
+        },
+        grid: {
+          vertLines: { color: '#161b22' },
+          horzLines: { color: '#161b22' },
+        },
+        timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#1e2738' },
+        rightPriceScale: { visible: false },
+        leftPriceScale:  { visible: false },
+        height: 90,
+        handleScroll: false,
+        handleScale:  false,
+      });
+
+      const as = this.drawdownChart.addSeries(AreaSeries, {
+        topColor:         'rgba(248, 113, 113, 0.22)',
+        bottomColor:      'rgba(248, 113, 113, 0.0)',
+        lineColor:        '#f87171',
+        lineWidth:        1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      as.setData(ddData as { time: UTCTimestamp; value: number }[]);
+      this.drawdownChart.timeScale().fitContent();
+    });
   }
 }

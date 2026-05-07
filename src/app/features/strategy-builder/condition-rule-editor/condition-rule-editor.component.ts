@@ -17,6 +17,8 @@ import {
   getConditionsForIndicator,
   conditionNeedsSecondarySlot,
   conditionNeedsThreshold,
+  getCompatibleSecondaryShapes,
+  type IndicatorOutputShape,
 } from '../../../core/strategy/conditions.registry';
 import type { ConditionDef } from '../../../core/strategy/conditions.registry';
 import type { ConditionKey, ConditionRule, IndicatorSlot } from '../../../core/strategy/strategy.model';
@@ -74,6 +76,10 @@ export class ConditionRuleEditorComponent implements OnInit {
 
   protected readonly needsThreshold = computed(() =>
     conditionNeedsThreshold(this.conditionKey())
+  );
+
+  protected readonly secondaryAllowedShapes = computed<IndicatorOutputShape[]>(() =>
+    this.needsSecondary() ? getCompatibleSecondaryShapes(this.primarySlot().indicatorId) : []
   );
 
   private lastRuleKey = '';

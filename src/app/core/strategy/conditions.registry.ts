@@ -1,6 +1,6 @@
 import type { ConditionKey } from './strategy.model';
 
-export type IndicatorOutputShape = 'overlay-line' | 'oscillator' | 'macd' | 'band' | 'two-line';
+export type IndicatorOutputShape = 'overlay-line' | 'oscillator' | 'macd' | 'band' | 'two-line' | 'stop-level';
 
 export interface ConditionDef {
   key: ConditionKey;
@@ -39,6 +39,15 @@ const TWO_LINE: ConditionDef[] = [
   { key: 'fast_below_slow',         label: 'Fast line is below slow',      needsSecondarySlot: false, needsThreshold: false },
 ];
 
+// ATR-based stop indicators: shortStop (overhead) vs longStop (underlying).
+// Reuses fast/slow condition keys so the evaluator needs no changes.
+const STOP_LEVEL: ConditionDef[] = [
+  { key: 'fast_crosses_above_slow', label: 'Short stop crosses above long stop', needsSecondarySlot: false, needsThreshold: false },
+  { key: 'fast_crosses_below_slow', label: 'Short stop crosses below long stop', needsSecondarySlot: false, needsThreshold: false },
+  { key: 'fast_above_slow',         label: 'Short stop is above long stop',      needsSecondarySlot: false, needsThreshold: false },
+  { key: 'fast_below_slow',         label: 'Short stop is below long stop',      needsSecondarySlot: false, needsThreshold: false },
+];
+
 const BAND: ConditionDef[] = [
   { key: 'price_crosses_upper', label: 'Price crosses above upper band', needsSecondarySlot: false, needsThreshold: false },
   { key: 'price_crosses_lower', label: 'Price crosses below lower band', needsSecondarySlot: false, needsThreshold: false },
@@ -48,7 +57,7 @@ const BAND: ConditionDef[] = [
   { key: 'price_below_middle',  label: 'Price is below middle band',     needsSecondarySlot: false, needsThreshold: false },
 ];
 
-const ALL_CONDITIONS: ConditionDef[] = [...OVERLAY_LINE, ...OSCILLATOR, ...MACD, ...TWO_LINE, ...BAND];
+const ALL_CONDITIONS: ConditionDef[] = [...OVERLAY_LINE, ...OSCILLATOR, ...MACD, ...TWO_LINE, ...STOP_LEVEL, ...BAND];
 
 export const INDICATOR_OUTPUT_SHAPES: Record<string, IndicatorOutputShape> = {
   // overlay-line
@@ -56,8 +65,14 @@ export const INDICATOR_OUTPUT_SHAPES: Record<string, IndicatorOutputShape> = {
   smma: 'overlay-line', dema: 'overlay-line', tema: 'overlay-line', hma: 'overlay-line',
   lsma: 'overlay-line', zlsma: 'overlay-line', alma: 'overlay-line', vwma: 'overlay-line',
   mcginley: 'overlay-line', 'parabolic-sar': 'overlay-line', supertrend: 'overlay-line',
-  'bb-trend': 'overlay-line', 'zig-zag': 'overlay-line', 'coral-trend': 'overlay-line',
+  'bb-trend': 'oscillator', 'zig-zag': 'overlay-line', 'coral-trend': 'overlay-line',
   twap: 'overlay-line',
+  // multi-output trend indicators mapped to two-line (fast = bullish line, slow = bearish line)
+  adx: 'two-line', dmi: 'two-line',                // fast = +DI, slow = −DI
+  ichimoku: 'two-line',                             // fast = Tenkan, slow = Kijun
+  'williams-alligator': 'two-line',                 // fast = Lips, slow = Jaw
+  // ATR-based stop-level indicators (shortStop vs longStop, not fast/slow MAs)
+  'chandelier-exit': 'stop-level', 'chande-kroll-stop': 'stop-level',
   // oscillator (bounded or scalar single-line)
   rsi: 'oscillator', stochrsi: 'oscillator', cci: 'oscillator', 'williams-r': 'oscillator',
   'chande-mo': 'oscillator', dpo: 'oscillator', 'bb-percentb': 'oscillator',
@@ -78,8 +93,7 @@ export const INDICATOR_OUTPUT_SHAPES: Record<string, IndicatorOutputShape> = {
   stochastic: 'two-line', macross: 'two-line', kdj: 'two-line',
   'wave-trend': 'two-line', 'smi-ergodic': 'two-line', rvi: 'two-line',
   tsi: 'two-line', trix: 'two-line', kst: 'two-line',
-  vortex: 'two-line', aroon: 'two-line', 'chande-kroll-stop': 'two-line',
-  'chandelier-exit': 'two-line', 'klinger-oscillator': 'two-line',
+  vortex: 'two-line', aroon: 'two-line', 'klinger-oscillator': 'two-line',
   // macd (macd / signal / histogram triple)
   macd: 'macd', macd4c: 'macd', 'impulse-macd': 'macd',
   'price-oscillator': 'macd', 'obv-macd': 'macd',
@@ -93,6 +107,7 @@ const CONDITIONS_BY_SHAPE: Record<IndicatorOutputShape, ConditionDef[]> = {
   oscillator:     OSCILLATOR,
   macd:           MACD,
   'two-line':     TWO_LINE,
+  'stop-level':   STOP_LEVEL,
   band:           BAND,
 };
 
@@ -107,4 +122,15 @@ export function conditionNeedsSecondarySlot(key: ConditionKey): boolean {
 
 export function conditionNeedsThreshold(key: ConditionKey): boolean {
   return ALL_CONDITIONS.find(c => c.key === key)?.needsThreshold ?? false;
+}
+
+// Maps a primary indicator's shape to the shapes its secondary must match.
+// Empty array means no secondary is possible for that shape.
+const SECONDARY_COMPAT: Partial<Record<IndicatorOutputShape, IndicatorOutputShape[]>> = {
+  'overlay-line': ['overlay-line'],
+};
+
+export function getCompatibleSecondaryShapes(primaryIndicatorId: string): IndicatorOutputShape[] {
+  const shape = INDICATOR_OUTPUT_SHAPES[primaryIndicatorId] ?? 'oscillator';
+  return SECONDARY_COMPAT[shape] ?? [];
 }

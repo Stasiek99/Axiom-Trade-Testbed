@@ -3,8 +3,9 @@ export type Lang = 'pl' | 'en';
 export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
   pl: {
     // ── Navigation ────────────────────────────────────────────────────────
-    'nav.dashboard': 'Wykres',
-    'nav.strategy':  'Strategia',
+    'nav.dashboard':   'Wykres',
+    'nav.strategy':    'Strategia',
+    'nav.statistics':  'Statystyki',
 
     // ── Toolbar ───────────────────────────────────────────────────────────
     'toolbar.screenshotTooltip': 'Zrzut ekranu',
@@ -38,6 +39,34 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'backtest.chartHint':     'Zielone trójkąty = sygnały wejścia | Czerwone trójkąty = sygnały wyjścia',
     'backtest.viewOnChart':   'Zobacz na wykresie cenowym',
     'backtest.clearStrategy': 'Wyczyść strategię',
+
+    // ── Phase 5 — Stats & Trade Log ───────────────────────────────────────
+    'backtest.statsTitle':    'Statystyki backtestów',
+    'backtest.netPnl':        'Netto P&L',
+    'backtest.profitFactor':  'Profit Factor',
+    'backtest.sharpeRatio':   'Sharpe Ratio',
+    'backtest.avgDuration':   'Śr. czas pozycji',
+    'backtest.bars':          'świec',
+    'backtest.drawdown':      'Drawdown',
+    'backtest.tradeLog':      'Dziennik transakcji',
+    'backtest.exportTrades':  'Transakcje CSV',
+    'backtest.exportEquity':  'Krzywa CSV',
+    'backtest.entryTime':     'Czas wejścia',
+    'backtest.entryPrice':    'Cena wejścia',
+    'backtest.exitTime':      'Czas wyjścia',
+    'backtest.exitPrice':     'Cena wyjścia',
+    'backtest.duration':      'Czas',
+    'backtest.reason':        'Powód',
+    'backtest.exitReason.signal': 'Sygnał',
+    'backtest.exitReason.forced': 'Wymuszone',
+
+    // ── Statistics page ───────────────────────────────────────────────────
+    'statistics.title':       'Statystyki backtestów',
+    'statistics.empty':       'Brak wyników backtestów',
+    'statistics.emptyHint':   'Uruchom backtest w Kreatorze Strategii, aby zobaczyć statystyki.',
+    'statistics.goToStrategy':'Kreator Strategii',
+    'strategy.viewStats':     'Zobacz statystyki',
+
     'strategy.entryCondition': 'Warunek Wejścia',
     'strategy.exitCondition':  'Warunek Wyjścia',
     'strategy.when':           'Kiedy',
@@ -147,8 +176,9 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
   en: {
     // ── Navigation ────────────────────────────────────────────────────────
-    'nav.dashboard': 'Chart',
-    'nav.strategy':  'Strategy',
+    'nav.dashboard':   'Chart',
+    'nav.strategy':    'Strategy',
+    'nav.statistics':  'Statistics',
 
     // ── Toolbar ───────────────────────────────────────────────────────────
     'toolbar.screenshotTooltip': 'Screenshot',
@@ -182,6 +212,34 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'backtest.chartHint':     'Green triangles = entry signals | Red triangles = exit signals',
     'backtest.viewOnChart':   'View on price chart',
     'backtest.clearStrategy': 'Clear strategy',
+
+    // ── Phase 5 — Stats & Trade Log ───────────────────────────────────────
+    'backtest.statsTitle':    'Backtest Statistics',
+    'backtest.netPnl':        'Net P&L',
+    'backtest.profitFactor':  'Profit Factor',
+    'backtest.sharpeRatio':   'Sharpe Ratio',
+    'backtest.avgDuration':   'Avg Duration',
+    'backtest.bars':          'bars',
+    'backtest.drawdown':      'Drawdown',
+    'backtest.tradeLog':      'Trade Log',
+    'backtest.exportTrades':  'Trades CSV',
+    'backtest.exportEquity':  'Equity CSV',
+    'backtest.entryTime':     'Entry Time',
+    'backtest.entryPrice':    'Entry Price',
+    'backtest.exitTime':      'Exit Time',
+    'backtest.exitPrice':     'Exit Price',
+    'backtest.duration':      'Duration',
+    'backtest.reason':        'Reason',
+    'backtest.exitReason.signal': 'Signal',
+    'backtest.exitReason.forced': 'Forced',
+
+    // ── Statistics page ───────────────────────────────────────────────────
+    'statistics.title':       'Backtest Statistics',
+    'statistics.empty':       'No backtest results',
+    'statistics.emptyHint':   'Run a backtest in the Strategy Builder to see statistics.',
+    'statistics.goToStrategy':'Strategy Builder',
+    'strategy.viewStats':     'View Statistics',
+
     'strategy.entryCondition': 'Entry Condition',
     'strategy.exitCondition':  'Exit Condition',
     'strategy.when':           'When',

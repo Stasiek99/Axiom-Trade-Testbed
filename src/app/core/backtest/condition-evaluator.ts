@@ -13,6 +13,10 @@ function twoLines(v: unknown): [number, number] {
   if ('viPlus'   in o) return [o['viPlus'],   o['viMinus']];
   if ('up'       in o) return [o['up'],       o['down']];
   if ('shortStop' in o) return [o['shortStop'], o['longStop']];
+  // multi-line trend indicators mapped to two-line shape
+  if ('plusDI'  in o) return [o['plusDI'],  o['minusDI']]; // ADX, DMI: +DI (fast) vs −DI (slow)
+  if ('tenkan'  in o) return [o['tenkan'],  o['kijun']];   // Ichimoku: Tenkan (fast) vs Kijun (slow)
+  if ('jaw'     in o) return [o['lips'],    o['jaw']];     // Alligator: Lips (fast) vs Jaw (slow)
   return [0, 0];
 }
 

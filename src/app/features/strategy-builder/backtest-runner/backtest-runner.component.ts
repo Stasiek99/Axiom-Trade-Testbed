@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -59,6 +60,7 @@ export class BacktestRunnerComponent {
   private readonly engine        = inject(BacktestEngineService);
   private readonly destroyRef    = inject(DestroyRef);
 
+  private  readonly router   = inject(Router);
   protected readonly store   = inject(BacktestStore);
   protected readonly lang    = inject(LangService);
 
@@ -66,7 +68,7 @@ export class BacktestRunnerComponent {
   protected readonly TIMEFRAMES = TIMEFRAMES;
 
   protected symbol    = 'ETH/USD';
-  protected timeframe = 'H1';
+  protected timeframe = 'D1';
 
   private runSub: Subscription | null = null;
 
@@ -87,6 +89,9 @@ export class BacktestRunnerComponent {
           try {
             const result = this.engine.run(bars, strategy, INITIAL_CAPITAL);
             this.store.setResult(result);
+            if (result.totalTrades > 0) {
+              this.router.navigate(['/statistics']);
+            }
           } catch {
             this.store.setError();
           }

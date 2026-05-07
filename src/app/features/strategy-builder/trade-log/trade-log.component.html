@@ -1,0 +1,75 @@
+@if (store.result(); as r) {
+  @if (r.totalTrades > 0) {
+    <div class="trade-log-card">
+
+      <!-- Header -->
+      <div class="card-header">
+        <mat-icon class="header-icon">receipt_long</mat-icon>
+        <span>{{ lang.t('backtest.tradeLog') }}</span>
+        <div class="export-group">
+          <button
+            mat-stroked-button
+            class="export-btn"
+            [matTooltip]="lang.t('backtest.exportTrades')"
+            (click)="exportTradeCsv()"
+          >
+            <mat-icon>download</mat-icon>
+            {{ lang.t('backtest.exportTrades') }}
+          </button>
+          <button
+            mat-stroked-button
+            class="export-btn"
+            [matTooltip]="lang.t('backtest.exportEquity')"
+            (click)="exportEquityCsv()"
+          >
+            <mat-icon>show_chart</mat-icon>
+            {{ lang.t('backtest.exportEquity') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table class="trade-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th>{{ lang.t('backtest.entryTime') }}</th>
+              <th class="col-price">{{ lang.t('backtest.entryPrice') }}</th>
+              <th>{{ lang.t('backtest.exitTime') }}</th>
+              <th class="col-price">{{ lang.t('backtest.exitPrice') }}</th>
+              <th class="col-num">{{ lang.t('backtest.duration') }}</th>
+              <th class="col-pnl">P&amp;L ($)</th>
+              <th class="col-pnl">P&amp;L (%)</th>
+              <th>{{ lang.t('backtest.reason') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of r.trades; track t.entryTime; let i = $index) {
+              <tr [class.row-win]="t.pnl > 0" [class.row-loss]="t.pnl < 0">
+                <td class="col-num muted">{{ i + 1 }}</td>
+                <td class="mono">{{ formatTime(t.entryTime) }}</td>
+                <td class="col-price mono">{{ t.entryPrice | number:'1.2-4' }}</td>
+                <td class="mono">{{ formatTime(t.exitTime) }}</td>
+                <td class="col-price mono">{{ t.exitPrice | number:'1.2-4' }}</td>
+                <td class="col-num muted">{{ t.barsHeld }}</td>
+                <td class="col-pnl" [class.win]="t.pnl > 0" [class.loss]="t.pnl < 0">
+                  {{ t.pnl >= 0 ? '+' : '' }}{{ t.pnl | number:'1.2-2' }}
+                </td>
+                <td class="col-pnl" [class.win]="t.pnlPct > 0" [class.loss]="t.pnlPct < 0">
+                  {{ t.pnlPct >= 0 ? '+' : '' }}{{ t.pnlPct | number:'1.2-2' }}%
+                </td>
+                <td>
+                  <span class="reason-badge" [class.forced]="t.exitReason === 'forced'">
+                    {{ exitLabel(t) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  }
+}

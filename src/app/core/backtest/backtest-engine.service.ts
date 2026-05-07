@@ -42,6 +42,7 @@ export class BacktestEngineService {
     let position        = 0;    // units held
     let entryPrice      = 0;
     let entryTime       = 0;
+    let entryBarIdx     = 0;
     let entryCommission = 0;
 
     const trades:      TradeResult[]  = [];
@@ -61,7 +62,7 @@ export class BacktestEngineService {
         );
 
         if (shouldExit) {
-          const fillPrice     = close * (1 - slippageRate);
+          const fillPrice      = close * (1 - slippageRate);
           const exitCommission = position * fillPrice * commissionRate;
           const proceeds       = position * fillPrice - exitCommission;
           const cost           = entryPrice * position + entryCommission;
@@ -74,6 +75,8 @@ export class BacktestEngineService {
             exitPrice:  fillPrice,
             pnl,
             pnlPct:     pnl / cost * 100,
+            barsHeld:   i - entryBarIdx,
+            exitReason: 'signal',
           });
 
           cash    += proceeds;
@@ -96,6 +99,7 @@ export class BacktestEngineService {
           position           = tradeCapital / fillPrice;
           entryPrice         = fillPrice;
           entryTime          = bar.time as number;
+          entryBarIdx        = i;
           cash              -= tradeCapital + entryCommission;
         }
       }
@@ -115,11 +119,13 @@ export class BacktestEngineService {
 
       trades.push({
         entryTime,
-        exitTime:  lastBar.time as number,
+        exitTime:   lastBar.time as number,
         entryPrice,
-        exitPrice: fillPrice,
+        exitPrice:  fillPrice,
         pnl,
-        pnlPct:    pnl / cost * 100,
+        pnlPct:     pnl / cost * 100,
+        barsHeld:   (bars.length - 1) - entryBarIdx,
+        exitReason: 'forced',
       });
     }
 
@@ -137,12 +143,18 @@ export class BacktestEngineService {
       trades,
       equityCurve,
       indicators,
-      totalReturn:    (finalCapital - initialCapital) / initialCapital * 100,
-      maxDrawdown:    this.maxDrawdown(equityCurve, initialCapital),
-      winRate:        trades.length > 0 ? winners / trades.length * 100 : 0,
-      totalTrades:    trades.length,
+      totalReturn:      (finalCapital - initialCapital) / initialCapital * 100,
+      maxDrawdown:      this.maxDrawdown(equityCurve, initialCapital),
+      winRate:          trades.length > 0 ? winners / trades.length * 100 : 0,
+      totalTrades:      trades.length,
       initialCapital,
       finalCapital,
+      netPnl:           finalCapital - initialCapital,
+      profitFactor:     this.profitFactor(trades),
+      sharpeRatio:      this.sharpeRatio(equityCurve),
+      avgTradeDuration: trades.length > 0
+        ? trades.reduce((s, t) => s + t.barsHeld, 0) / trades.length
+        : 0,
     };
   }
 
@@ -270,5 +282,27 @@ export class BacktestEngineService {
       if (d > dd) dd = d;
     }
     return dd;
+  }
+
+  private profitFactor(trades: TradeResult[]): number {
+    const gross = trades.reduce((s, t) => s + (t.pnl > 0 ? t.pnl : 0), 0);
+    const loss  = trades.reduce((s, t) => s + (t.pnl < 0 ? Math.abs(t.pnl) : 0), 0);
+    if (loss === 0) return gross > 0 ? Infinity : 0;
+    return gross / loss;
+  }
+
+  /** Bar-by-bar Sharpe, annualised with √252 (daily bar convention). */
+  private sharpeRatio(curve: EquityPoint[]): number {
+    if (curve.length < 2) return 0;
+    const returns: number[] = [];
+    for (let i = 1; i < curve.length; i++) {
+      const prev = curve[i - 1].value;
+      if (prev > 0) returns.push(curve[i].value / prev - 1);
+    }
+    if (returns.length === 0) return 0;
+    const mean = returns.reduce((s, r) => s + r, 0) / returns.length;
+    const variance = returns.reduce((s, r) => s + Math.pow(r - mean, 2), 0) / returns.length;
+    const std = Math.sqrt(variance);
+    return std > 0 ? (mean / std) * Math.sqrt(252) : 0;
   }
 }

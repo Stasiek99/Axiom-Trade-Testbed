@@ -48,7 +48,9 @@
       "Skill(qa-tests)",
       "Skill(qa-tests:*)",
       "Bash(node_modules/.bin/vitest run *)",
-      "Bash(grep -c \"^  {$\" src/app/core/data/indicators.catalog.ts)"
+      "Bash(grep -c \"^  {$\" src/app/core/data/indicators.catalog.ts)",
+      "Bash(xargs grep *)",
+      "Bash(git add *)"
     ]
   }
 }

@@ -40,7 +40,7 @@ import { BacktestChartComponent } from './backtest-chart/backtest-chart.componen
   styleUrl: './strategy-builder.component.scss',
 })
 export class StrategyBuilderComponent implements OnInit {
-  private readonly store = inject(StrategyStore);
+  private  readonly store = inject(StrategyStore);
   protected readonly lang = inject(LangService);
 
   protected readonly nameCtrl  = new FormControl<string>('', { nonNullable: true });
