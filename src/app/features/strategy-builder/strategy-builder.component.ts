@@ -16,6 +16,8 @@ import { StrategyStore, STRATEGY_PRESETS } from '../../core/strategy/strategy.st
 import { LangService } from '../../core/services/lang.service';
 import type { ConditionRule, RiskConfig, StrategyConfig } from '../../core/strategy/strategy.model';
 import { ConditionRuleEditorComponent } from './condition-rule-editor/condition-rule-editor.component';
+import { BacktestRunnerComponent } from './backtest-runner/backtest-runner.component';
+import { BacktestChartComponent } from './backtest-chart/backtest-chart.component';
 
 @Component({
   selector: 'app-strategy-builder',
@@ -31,6 +33,8 @@ import { ConditionRuleEditorComponent } from './condition-rule-editor/condition-
     MatDividerModule,
     MatTooltipModule,
     ConditionRuleEditorComponent,
+    BacktestRunnerComponent,
+    BacktestChartComponent,
   ],
   templateUrl: './strategy-builder.component.html',
   styleUrl: './strategy-builder.component.scss',

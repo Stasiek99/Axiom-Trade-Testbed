@@ -154,13 +154,13 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 - [x] `ChartService.addLineSeries()` — overlay indicator lines on the chart
 
 #### 3c — Strategy Parameter UI
-- [ ] `StrategyBuilderComponent` — reactive form with:
+- [x] `StrategyBuilderComponent` — reactive form with:
   - **Inputs:** named numeric parameters (e.g., `MA_fast = 10`, `MA_slow = 50`)
   - **Entry condition:** dropdown (e.g., "EMA fast crosses above EMA slow")
   - **Exit condition:** dropdown (e.g., "EMA fast crosses below EMA slow")
   - **Risk:** position size (% of capital), commission (bps), slippage (bps)
-- [ ] `StrategyStore` (signal store) — holds active strategy config
-- [ ] Preset strategies: EMA Cross, RSI Overbought/Oversold, MACD Signal Cross
+- [x] `StrategyStore` (signal store) — holds active strategy config
+- [x] Preset strategies: EMA Cross, RSI Overbought/Oversold, MACD Signal Cross
 
 **Deliverable:** User can configure an EMA 10/30 crossover strategy via UI.
 

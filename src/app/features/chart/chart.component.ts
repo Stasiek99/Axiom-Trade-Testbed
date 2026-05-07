@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, DestroyRef, ElementRef, ViewChild, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject, switchMap } from 'rxjs';
@@ -8,7 +8,11 @@ import { type UTCTimestamp } from 'lightweight-charts';
 import { BinanceDataService } from '../../core/services/binance-data.service';
 import { BinanceWsService, WsEvent } from '../../core/services/binance-ws.service';
 import { ChartService, CrosshairData } from '../../core/services/chart.service';
+import { LangService } from '../../core/services/lang.service';
 import { Bar } from '../../core/models/bar.model';
+import { BacktestStore } from '../../core/backtest/backtest.store';
+import type { IndicatorSeries } from '../../core/backtest/backtest.model';
+import { BacktestChartComponent } from '../strategy-builder/backtest-chart/backtest-chart.component';
 import { SymbolSelectorComponent } from './symbol-selector/symbol-selector.component';
 
 const TIMEFRAME_SECONDS: Record<string, number> = {
@@ -17,7 +21,7 @@ const TIMEFRAME_SECONDS: Record<string, number> = {
 
 @Component({
   selector: 'app-chart',
-  imports: [CommonModule, MatButtonToggleModule, MatProgressSpinnerModule, SymbolSelectorComponent],
+  imports: [CommonModule, MatButtonToggleModule, MatProgressSpinnerModule, SymbolSelectorComponent, BacktestChartComponent],
   providers: [ChartService],
   templateUrl: './chart.component.html',
   styleUrl: './chart.component.scss',
@@ -26,7 +30,10 @@ export class ChartComponent implements AfterViewInit {
   private readonly binanceDataService = inject(BinanceDataService);
   private readonly binanceWs          = inject(BinanceWsService);
   private readonly chartService       = inject(ChartService);
-  private readonly destroyRef     = inject(DestroyRef);
+  private readonly destroyRef         = inject(DestroyRef);
+
+  protected readonly backtestStore = inject(BacktestStore);
+  protected readonly lang          = inject(LangService);
 
   @ViewChild('chartContainer') chartContainer!: ElementRef<HTMLDivElement>;
 
@@ -39,16 +46,33 @@ export class ChartComponent implements AfterViewInit {
 
   readonly timeframes = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
 
-  private resizeObserver: ResizeObserver | null = null;
-  private currentBar: Bar | null = null;
-  private lastBarTime = 0;
-  private hasConnected = false;
-  private loadGeneration = 0;
+  private resizeObserver:  ResizeObserver | null = null;
+  private currentBar:      Bar | null = null;
+  private lastBarTime      = 0;
+  private hasConnected     = false;
+  private loadGeneration   = 0;
   private readonly stream$ = new Subject<{ symbol: string; timeframe: string }>();
+
+  // Convert BacktestStore result signal to Observable for use in ngAfterViewInit
+  private readonly backtestResult$ = toObservable(this.backtestStore.result);
 
   ngAfterViewInit(): void {
     const container = this.chartContainer.nativeElement;
     this.chartService.init(container);
+
+    // Indicator overlays — react to backtest results after chart is ready
+    this.backtestResult$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
+      this.chartService.clearIndicatorSeries();
+
+      if (result && result.indicators.length > 0) {
+        const seen = new Set<string>();
+        for (const ind of result.indicators) {
+          if (seen.has(ind.name)) continue;
+          seen.add(ind.name);
+          this.chartService.addIndicatorOverlay(ind);
+        }
+      }
+    });
 
     const unsubCrosshair = this.chartService.subscribeCrosshairMove(data => {
       this.crosshair.set(data);
@@ -178,5 +202,9 @@ export class ChartComponent implements AfterViewInit {
     this.currentBar = null;
     this.loadBars();
     this.stream$.next({ symbol: this.symbol(), timeframe: tf });
+  }
+
+  dedupIndicators(indicators: IndicatorSeries[]): IndicatorSeries[] {
+    return indicators.filter((ind, i, arr) => arr.findIndex(x => x.name === ind.name) === i);
   }
 }

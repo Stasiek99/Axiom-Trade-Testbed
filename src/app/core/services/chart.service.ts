@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { createChart, CandlestickSeries, LineSeries, CrosshairMode, MouseEventParams, Time } from 'lightweight-charts';
 import { Bar } from '../models/bar.model';
-import type { ChartPoint } from '../indicators/utils';
+import type { ChartPoint } from '../indicators';
+import type { IndicatorSeries } from '../backtest/backtest.model';
 
 export interface CrosshairData {
   time: number;
@@ -15,6 +16,8 @@ export interface CrosshairData {
 export class ChartService {
   private chart: ReturnType<typeof createChart> | null = null;
   private candleSeries: ReturnType<ReturnType<typeof createChart>['addSeries']> | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private indSeries: any[] = [];
 
   init(container: HTMLElement): void {
     this.chart = createChart(container, {
@@ -80,6 +83,66 @@ export class ChartService {
     });
     series.setData(data);
     return series;
+  }
+
+  /**
+   * Equity-curve overlay on the left price axis.
+   * Data values should be percent-return (0 = break-even, positive = profit).
+   * Rendered in the bottom 25 % of the chart to avoid overlapping candles.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addEquitySeries(data: ChartPoint[]): any {
+    const series = this.chart!.addSeries(LineSeries, {
+      color:                  '#22d3ee',
+      lineWidth:              2,
+      priceScaleId:           'left',
+      priceLineVisible:       false,
+      lastValueVisible:       false,
+      crosshairMarkerVisible: false,
+    });
+    this.chart!.applyOptions({
+      leftPriceScale: {
+        visible:      true,
+        scaleMargins: { top: 0.75, bottom: 0 },
+        borderColor:  '#1e2738',
+      },
+    });
+    series.setData(data);
+    return series;
+  }
+
+  hideEquityScale(): void {
+    this.chart?.applyOptions({ leftPriceScale: { visible: false } });
+  }
+
+  addIndicatorOverlay(ind: IndicatorSeries): void {
+    if (!this.chart) return;
+    const lws = this.chart.addSeries(LineSeries, {
+      color:                  ind.color,
+      lineWidth:              1,
+      priceScaleId:           ind.overlay ? 'right' : ind.scaleId,
+      priceLineVisible:       false,
+      lastValueVisible:       false,
+      crosshairMarkerVisible: false,
+    });
+    if (!ind.overlay) {
+      try {
+        this.chart.priceScale(ind.scaleId).applyOptions({
+          visible:      false,
+          scaleMargins: { top: 0.55, bottom: 0.22 },
+        });
+      } catch { /* scale may not exist yet */ }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    lws.setData(ind.data as any);
+    this.indSeries.push(lws);
+  }
+
+  clearIndicatorSeries(): void {
+    for (const s of this.indSeries) {
+      this.chart?.removeSeries(s);
+    }
+    this.indSeries = [];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
