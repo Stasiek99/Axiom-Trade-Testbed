@@ -169,19 +169,19 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 ### Phase 4 — Backtest Engine
 **Goal:** Replay historical bars through the strategy and simulate a portfolio.
 
-- [ ] `DataFeederService` — iterates a `Bar[]` array, emitting one bar at a time (Observable with configurable speed or instant)
-- [ ] **Pre-data seeding:** `DataFeederService` fetches `indicatorMaxPeriod` extra bars before the requested window; indicators compute on the full dataset but only simulated trades within the visible window
-- [ ] `BacktestEngineService`:
+- [x] `DataFeederService` — iterates a `Bar[]` array, emitting one bar at a time (Observable with configurable speed or instant)
+- [x] **Pre-data seeding:** `DataFeederService` fetches `indicatorMaxPeriod` extra bars before the requested window; indicators compute on the full dataset but only simulated trades within the visible window
+- [x] `BacktestEngineService`:
   - Maintains portfolio state: `cash`, `position`, `equity curve[]`
   - On each bar: evaluates entry/exit conditions against indicator values computed up to that bar
   - Executes orders with commission and slippage applied
   - Records `TradeResult` on position close
-- [ ] `BacktestRunnerComponent` — Run / Pause / Stop controls, progress bar
-- [ ] **Race condition guards:**
+- [x] `BacktestRunnerComponent` — Run / Pause / Stop controls, progress bar
+- [x] **Race condition guards:**
   - `BacktestRunnerComponent` disables Run while a backtest is in progress
   - Strategy config is snapshot at start time (not read reactively mid-run)
   - In-flight observables are cancelled via `takeUntilDestroyed` on component destroy
-- [ ] Equity curve as a line series overlaid on the chart (secondary Y-axis)
+- [x] Equity curve as a line series overlaid on the chart (secondary Y-axis)
 
 **Deliverable:** Running a backtest replays all bars, opens/closes positions, builds equity curve.
 

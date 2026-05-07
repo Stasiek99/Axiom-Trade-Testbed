@@ -68,11 +68,12 @@ export class BinanceDataService {
 
   private mapKlines(klines: BinanceKline[]): Bar[] {
     return klines.map(k => ({
-      time: Math.floor(k[0] / 1000) as UTCTimestamp,
-      open:  parseFloat(k[1]),
-      high:  parseFloat(k[2]),
-      low:   parseFloat(k[3]),
-      close: parseFloat(k[4]),
+      time:   Math.floor(k[0] / 1000) as UTCTimestamp,
+      open:   parseFloat(k[1]),
+      high:   parseFloat(k[2]),
+      low:    parseFloat(k[3]),
+      close:  parseFloat(k[4]),
+      volume: parseFloat(k[5]),
     }));
   }
 
@@ -104,6 +105,31 @@ export class BinanceDataService {
       }),
       catchError(error => {
         console.error('[BinanceDataService] Error fetching crypto bars', error);
+        return EMPTY;
+      })
+    );
+  }
+
+  /**
+   * Fetch `limit` bars ending before `endTimeSec` (Unix seconds).
+   * Used for lazy-loading historical data when the user scrolls left past the oldest bar.
+   */
+  getCryptoBarsEndingAt(
+    symbol: string,
+    timeframe: string,
+    endTimeSec: number,
+    limit = 500,
+  ): Observable<Bar[]> {
+    const params = new HttpParams()
+      .set('symbol',  this.toBinanceSymbol(symbol))
+      .set('interval', this.toBinanceInterval(timeframe))
+      .set('endTime', (endTimeSec * 1000 - 1).toString())
+      .set('limit',   limit.toString());
+
+    return this.http.get<BinanceKline[]>(BINANCE_KLINES_URL, { params }).pipe(
+      map(klines => this.mapKlines(klines)),
+      catchError(error => {
+        console.error('[BinanceDataService] Error fetching historical bars', error);
         return EMPTY;
       })
     );

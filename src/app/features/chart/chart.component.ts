@@ -3,7 +3,7 @@ import { AfterViewInit, Component, DestroyRef, ElementRef, ViewChild, inject, si
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, switchMap } from 'rxjs';
+import { Subject, switchMap, finalize } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { BinanceDataService } from '../../core/services/binance-data.service';
 import { BinanceWsService, WsEvent } from '../../core/services/binance-ws.service';
@@ -11,7 +11,9 @@ import { ChartService, CrosshairData } from '../../core/services/chart.service';
 import { LangService } from '../../core/services/lang.service';
 import { Bar } from '../../core/models/bar.model';
 import { BacktestStore } from '../../core/backtest/backtest.store';
+import { BacktestEngineService } from '../../core/backtest/backtest-engine.service';
 import type { IndicatorSeries } from '../../core/backtest/backtest.model';
+import { StrategyStore } from '../../core/strategy/strategy.store';
 import { BacktestChartComponent } from '../strategy-builder/backtest-chart/backtest-chart.component';
 import { SymbolSelectorComponent } from './symbol-selector/symbol-selector.component';
 
@@ -34,6 +36,8 @@ export class ChartComponent implements AfterViewInit {
 
   protected readonly backtestStore = inject(BacktestStore);
   protected readonly lang          = inject(LangService);
+  private  readonly strategyStore  = inject(StrategyStore);
+  private  readonly engine         = inject(BacktestEngineService);
 
   @ViewChild('chartContainer') chartContainer!: ElementRef<HTMLDivElement>;
 
@@ -46,11 +50,13 @@ export class ChartComponent implements AfterViewInit {
 
   readonly timeframes = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
 
-  private resizeObserver:  ResizeObserver | null = null;
-  private currentBar:      Bar | null = null;
-  private lastBarTime      = 0;
-  private hasConnected     = false;
-  private loadGeneration   = 0;
+  private resizeObserver:   ResizeObserver | null = null;
+  private currentBar:       Bar | null = null;
+  private lastBarTime       = 0;
+  private hasConnected      = false;
+  private loadGeneration    = 0;
+  private isFetchingHistory = false;
+  private historyExhausted  = false;
   private readonly stream$ = new Subject<{ symbol: string; timeframe: string }>();
 
   // Convert BacktestStore result signal to Observable for use in ngAfterViewInit
@@ -60,18 +66,14 @@ export class ChartComponent implements AfterViewInit {
     const container = this.chartContainer.nativeElement;
     this.chartService.init(container);
 
-    // Indicator overlays — react to backtest results after chart is ready
-    this.backtestResult$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
-      this.chartService.clearIndicatorSeries();
+    const unsubRange = this.chartService.subscribeVisibleLogicalRangeChange(range => {
+      if (!range || this.loading() || this.isFetchingHistory || this.historyExhausted) return;
+      if (range.from < 10) this.loadHistoricalBars();
+    });
 
-      if (result && result.indicators.length > 0) {
-        const seen = new Set<string>();
-        for (const ind of result.indicators) {
-          if (seen.has(ind.name)) continue;
-          seen.add(ind.name);
-          this.chartService.addIndicatorOverlay(ind);
-        }
-      }
+    // All indicators go to pane 1 via BacktestChartComponent — price chart stays clean.
+    this.backtestResult$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.chartService.clearIndicatorSeries();
     });
 
     const unsubCrosshair = this.chartService.subscribeCrosshairMove(data => {
@@ -108,10 +110,11 @@ export class ChartComponent implements AfterViewInit {
     });
     this.resizeObserver.observe(container);
 
-    // unsubCrosshair must run before chartService.destroy()
+    // unsubCrosshair/unsubRange must run before chartService.destroy()
     this.destroyRef.onDestroy(() => {
       this.resizeObserver?.disconnect();
       unsubCrosshair();
+      unsubRange();
       this.chartService.destroy();
     });
 
@@ -130,7 +133,7 @@ export class ChartComponent implements AfterViewInit {
     if (barTime === undefined) return;
 
     if (!this.currentBar || this.currentBar.time !== barTime) {
-      this.currentBar = { time: barTime, open: price, high: price, low: price, close: price };
+      this.currentBar = { time: barTime, open: price, high: price, low: price, close: price, volume: 0 };
     } else {
       this.currentBar = {
         ...this.currentBar,
@@ -140,6 +143,38 @@ export class ChartComponent implements AfterViewInit {
       };
     }
     this.chartService.updateBar(this.currentBar);
+  }
+
+  private loadHistoricalBars(): void {
+    const oldestTime = this.chartService.getOldestBarTime();
+    if (!oldestTime) return;
+    this.isFetchingHistory = true;
+    // Track whether next() fired — if the service returns EMPTY (network error),
+    // next() is never called and isFetchingHistory would stick at true without finalize.
+    let barsReceived = false;
+    this.binanceDataService.getCryptoBarsEndingAt(this.symbol(), this.timeframe(), oldestTime)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.isFetchingHistory = false;
+          // Re-check after a successful fetch: a single zoom-out can push range.from
+          // far below 10 in one step; the range event fired inside prependBars is
+          // suppressed while isFetchingHistory is true, so we recurse here instead.
+          if (barsReceived && !this.historyExhausted) {
+            const range = this.chartService.getVisibleLogicalRange();
+            if (range && range.from < 10) this.loadHistoricalBars();
+          }
+        }),
+      )
+      .subscribe((bars: Bar[]) => {
+        barsReceived = true;
+        if (bars.length === 0) {
+          this.historyExhausted = true;
+        } else {
+          this.chartService.prependBars(bars);
+          this.refreshBacktestIndicators();
+        }
+      });
   }
 
   private loadBars(): void {
@@ -161,6 +196,15 @@ export class ChartComponent implements AfterViewInit {
         }
         this.loading.set(false);
       });
+  }
+
+  private refreshBacktestIndicators(): void {
+    if (!this.backtestStore.result()) return;
+    const indicators = this.engine.computeIndicatorSeries(
+      this.chartService.getBars(),
+      this.strategyStore.config(),
+    );
+    this.backtestStore.updateIndicators(indicators);
   }
 
   private fillGap(): void {
@@ -189,8 +233,10 @@ export class ChartComponent implements AfterViewInit {
 
   onSymbolChange(sym: string): void {
     this.symbol.set(sym);
-    this.hasConnected = false;
-    this.currentBar = null;
+    this.hasConnected     = false;
+    this.currentBar       = null;
+    this.isFetchingHistory = false;
+    this.historyExhausted  = false;
     this.chartService.setData([]);
     this.loadBars();
     this.stream$.next({ symbol: sym, timeframe: this.timeframe() });
@@ -198,8 +244,10 @@ export class ChartComponent implements AfterViewInit {
 
   onTimeframeChange(tf: string): void {
     this.timeframe.set(tf);
-    this.hasConnected = false;
-    this.currentBar = null;
+    this.hasConnected     = false;
+    this.currentBar       = null;
+    this.isFetchingHistory = false;
+    this.historyExhausted  = false;
     this.loadBars();
     this.stream$.next({ symbol: this.symbol(), timeframe: tf });
   }

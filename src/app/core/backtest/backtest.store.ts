@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import type { BacktestResult, BacktestStatus } from './backtest.model';
+import type { BacktestResult, BacktestStatus, IndicatorSeries } from './backtest.model';
 
 @Injectable({ providedIn: 'root' })
 export class BacktestStore {
@@ -31,6 +31,12 @@ export class BacktestStore {
   setError(): void {
     this._status.set('error');
     this._progress.set(0);
+  }
+
+  updateIndicators(indicators: IndicatorSeries[]): void {
+    const current = this._result();
+    if (!current) return;
+    this._result.set({ ...current, indicators });
   }
 
   reset(): void {

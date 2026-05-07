@@ -12,6 +12,7 @@ import type { UTCTimestamp } from 'lightweight-charts';
 
 import { BacktestStore } from '../../../core/backtest/backtest.store';
 import { LangService } from '../../../core/services/lang.service';
+import { ChartService } from '../../../core/services/chart.service';
 import type { BacktestResult, IndicatorRole, IndicatorSeries } from '../../../core/backtest/backtest.model';
 
 @Component({
@@ -29,36 +30,46 @@ export class BacktestChartComponent implements AfterViewInit {
   protected readonly lang      = inject(LangService);
   private  readonly router     = inject(Router);
   private  readonly destroyRef = inject(DestroyRef);
+  // Available when rendered inside ChartComponent; null in strategy-builder (standalone mode).
+  private  readonly mainChart  = inject(ChartService, { optional: true });
 
   @ViewChild('container') containerRef!: ElementRef<HTMLDivElement>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private chart:   any = null;
+  private chart:   any = null;   // used only in standalone mode
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private series:  any[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private markers: any[] = [];
 
+  /** True when rendering into pane 1 of the main chart (inside ChartComponent). */
+  protected get paneMode(): boolean { return !!this.mainChart; }
+
   private readonly result$ = toObservable(this.store.result);
 
   ngAfterViewInit(): void {
-    // Eager init: works when navigating back to the page with a result already in the store.
-    this.maybeInitChart();
+    // Standalone mode: eagerly init own chart so it's ready when a result is already in the store.
+    if (!this.mainChart) this.maybeInitChart();
 
     this.result$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(r => {
-      // zone.js flushes the toObservable effect as a microtask, *before* Angular's
-      // change-detection updates the @if(result) block and sets the ViewChild.
-      // setTimeout(0) yields to the macrotask queue, by which time zone.js CD has
-      // run and #container is in the DOM.
+      // zone.js flushes toObservable before Angular CD updates the @if block.
+      // setTimeout(0) yields to the macrotask queue so #container is in the DOM.
       setTimeout(() => {
-        this.maybeInitChart();
+        if (!this.mainChart) this.maybeInitChart();
         this.render(r);
       });
     });
 
     this.destroyRef.onDestroy(() => {
-      this.chart?.remove();
-      this.chart = null;
+      for (const m of this.markers) { try { m.detach(); } catch { /* detached */ } }
+      if (this.mainChart) {
+        const ch = this.mainChart.getChart();
+        for (const s of this.series) { try { ch?.removeSeries(s); } catch { /* removed */ } }
+        this.mainChart.removeIndicatorPane();
+      } else {
+        this.chart?.remove();
+        this.chart = null;
+      }
     });
   }
 
@@ -75,7 +86,7 @@ export class BacktestChartComponent implements AfterViewInit {
     return indicators.filter((ind, i, arr) => arr.findIndex(x => x.name === ind.name) === i);
   }
 
-  // Creates the LWC chart instance only once, guarded by container availability.
+  // Creates the own LWC chart instance — only called in standalone mode.
   private maybeInitChart(): void {
     if (this.chart || !this.containerRef?.nativeElement) return;
     this.chart = createChart(this.containerRef.nativeElement, {
@@ -100,59 +111,85 @@ export class BacktestChartComponent implements AfterViewInit {
   }
 
   private render(result: BacktestResult | null): void {
-    for (const m of this.markers) { try { m.detach(); } catch { /* already detached */ } }
+    // --- CLEANUP ---
+    for (const m of this.markers) { try { m.detach(); } catch { /* detached */ } }
     this.markers = [];
-    for (const s of this.series) { try { this.chart?.removeSeries(s); } catch { /* removed */ } }
+
+    if (this.mainChart) {
+      const ch = this.mainChart.getChart();
+      for (const s of this.series) { try { ch?.removeSeries(s); } catch { /* removed */ } }
+    } else {
+      for (const s of this.series) { try { this.chart?.removeSeries(s); } catch { /* removed */ } }
+    }
     this.series = [];
 
-    if (!result || !result.indicators.length) {
-      this.chart?.remove();
-      this.chart = null;
+    // All indicators go to pane 1 — price chart stays clean (candlesticks only).
+    const indicators = result?.indicators ?? [];
+
+    if (!result || !indicators.length) {
+      if (this.mainChart) {
+        this.mainChart.removeIndicatorPane();
+      } else {
+        this.chart?.remove();
+        this.chart = null;
+      }
       return;
     }
 
-    this.maybeInitChart();
-    if (!this.chart) return;
+    // --- RESOLVE CHART + PANE INDEX ---
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let workChart: any;
+    let paneIdx: number;
 
+    if (this.mainChart) {
+      this.mainChart.ensureIndicatorPane();
+      workChart = this.mainChart.getChart();
+      if (!workChart) return;
+      paneIdx = 1;
+    } else {
+      this.maybeInitChart();
+      if (!this.chart) return;
+      workChart = this.chart;
+      paneIdx = 0;
+    }
+
+    // --- RENDER SERIES ---
     const entryTimes = new Set(result.trades.map(t => t.entryTime));
     const exitTimes  = new Set(result.trades.map(t => t.exitTime));
 
-    // Collect all roles for each unique indicator name so markers survive deduplication.
+    // Collect all roles per name so markers survive deduplication.
     const nameToRoles = new Map<string, Set<IndicatorRole>>();
-    for (const ind of result.indicators) {
+    for (const ind of indicators) {
       if (!nameToRoles.has(ind.name)) nameToRoles.set(ind.name, new Set());
       nameToRoles.get(ind.name)!.add(ind.role);
     }
 
-    // Render only one series per unique name — entry and exit slots sharing the
-    // same indicator (e.g. EMA(10)) produce identical data, so one line suffices.
-
-    // Overlay indicators (EMA, SMA, …) share one price scale so their visual
-    // crossing matches their numerical crossing. Oscillators each get their own
-    // scale to avoid range interference.
+    // Overlay-type indicators share one scale so they remain visually comparable;
+    // oscillators each get their own scale so they auto-normalize independently.
     let overlayScaleInit = false;
-    for (const ind of this.dedup(result.indicators)) {
-      const roles       = nameToRoles.get(ind.name)!;
-      const scaleId     = ind.overlay ? 'overlay-price' : `mini-${ind.id}`;
-      const lws = this.chart.addSeries(LineSeries, {
+    for (const ind of this.dedup(indicators)) {
+      const roles   = nameToRoles.get(ind.name)!;
+      const scaleId = ind.overlay ? 'overlay-price' : `mini-${ind.id}`;
+
+      const lws = workChart.addSeries(LineSeries, {
         color:            ind.color,
         lineWidth:        1.5,
         priceScaleId:     scaleId,
         priceLineVisible: false,
         lastValueVisible: false,
-      });
+      }, paneIdx);
 
       try {
         if (ind.overlay) {
           if (!overlayScaleInit) {
-            this.chart.priceScale('overlay-price').applyOptions({
+            workChart.priceScale('overlay-price', paneIdx).applyOptions({
               visible:      false,
               scaleMargins: { top: 0.05, bottom: 0.05 },
             });
             overlayScaleInit = true;
           }
         } else {
-          this.chart.priceScale(scaleId).applyOptions({
+          workChart.priceScale(scaleId, paneIdx).applyOptions({
             visible:      false,
             scaleMargins: { top: 0.05, bottom: 0.05 },
           });
@@ -162,8 +199,6 @@ export class BacktestChartComponent implements AfterViewInit {
       lws.setData(ind.data as { time: UTCTimestamp; value: number }[]);
       this.series.push(lws);
 
-      // Place entry markers on the primary output line of whichever deduplicated
-      // series carries the entry-primary role (index 0 = first output of indicator).
       if (roles.has('entry-primary') && ind.id.endsWith('-0')) {
         const pts = ind.data
           .filter(p => entryTimes.has(p.time))
@@ -191,6 +226,9 @@ export class BacktestChartComponent implements AfterViewInit {
       }
     }
 
-    this.chart.timeScale().fitContent();
+    // Only fit content in standalone mode; in pane mode the main chart controls the viewport.
+    if (paneIdx === 0) {
+      workChart.timeScale().fitContent();
+    }
   }
 }

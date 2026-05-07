@@ -39,8 +39,10 @@
         </span>
       </div>
 
-      <!-- Chart canvas -->
-      <div class="chart-wrap" #container></div>
+      <!-- Chart canvas — standalone mode only; pane mode renders into the main chart -->
+      @if (!paneMode) {
+        <div class="chart-wrap" #container></div>
+      }
 
       <!-- Hint -->
       <p class="hint">

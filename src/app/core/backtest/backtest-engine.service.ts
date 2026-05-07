@@ -146,6 +146,26 @@ export class BacktestEngineService {
     };
   }
 
+  /** Re-compute only the indicator series from a new bar set without re-running the trading loop. */
+  computeIndicatorSeries(bars: Bar[], strategy: StrategyConfig): IndicatorSeries[] {
+    const barInputs = bars as unknown as BarInput[];
+    const entryPrimary   = this.computeSlot(barInputs, strategy.entry.primarySlot);
+    const entrySecondary = strategy.entry.secondarySlot
+      ? this.computeSlot(barInputs, strategy.entry.secondarySlot)
+      : [] as unknown[];
+    const exitPrimary    = this.computeSlot(barInputs, strategy.exit.primarySlot);
+    const exitSecondary  = strategy.exit.secondarySlot
+      ? this.computeSlot(barInputs, strategy.exit.secondarySlot)
+      : [] as unknown[];
+
+    return [
+      ...this.buildSeriesLines(bars, entryPrimary,   strategy.entry.primarySlot,   'entry-primary'),
+      ...(strategy.entry.secondarySlot ? this.buildSeriesLines(bars, entrySecondary, strategy.entry.secondarySlot, 'entry-secondary') : []),
+      ...this.buildSeriesLines(bars, exitPrimary,    strategy.exit.primarySlot,    'exit-primary'),
+      ...(strategy.exit.secondarySlot  ? this.buildSeriesLines(bars, exitSecondary,  strategy.exit.secondarySlot,  'exit-secondary')  : []),
+    ];
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   private buildSeriesLines(

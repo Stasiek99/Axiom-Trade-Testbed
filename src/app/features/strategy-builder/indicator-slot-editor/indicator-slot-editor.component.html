@@ -35,7 +35,7 @@
             <input
               matInput
               type="number"
-              [value]="paramValues()[param.key] ?? param.defaultValue"
+              [value]="paramValue(param.key, param.defaultValue)"
               [attr.min]="param.min"
               [attr.max]="param.max"
               [attr.step]="param.step ?? 1"
@@ -49,7 +49,7 @@
           <mat-form-field appearance="outline" class="param-field">
             <mat-label>{{ lang.paramLabel(param.label) }}</mat-label>
             <mat-select
-              [value]="paramValues()[param.key] ?? param.defaultValue"
+              [value]="paramValue(param.key, param.defaultValue)"
               (selectionChange)="onParamChange(param.key, $event.value)"
               [matTooltip]="lang.paramDescription(indicatorId(), param.key, param.description ?? '')"
             >

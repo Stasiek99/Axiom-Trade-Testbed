@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { createChart, CandlestickSeries, LineSeries, CrosshairMode, MouseEventParams, Time } from 'lightweight-charts';
+import { createChart, CandlestickSeries, LineSeries, CrosshairMode, MouseEventParams, Time, LogicalRange } from 'lightweight-charts';
 import { Bar } from '../models/bar.model';
 import type { ChartPoint } from '../indicators';
 import type { IndicatorSeries } from '../backtest/backtest.model';
@@ -18,8 +18,11 @@ export class ChartService {
   private candleSeries: ReturnType<ReturnType<typeof createChart>['addSeries']> | null = null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private indSeries: any[] = [];
+  private bars: Bar[] = [];
+  private totalHeight = 0;
 
   init(container: HTMLElement): void {
+    this.totalHeight = container.clientHeight;
     this.chart = createChart(container, {
       layout: {
         background: { color: '#131722' },
@@ -55,14 +58,79 @@ export class ChartService {
     this.chart?.remove();
     this.chart = null;
     this.candleSeries = null;
+    this.bars = [];
   }
 
   resize(width: number, height: number): void {
+    this.totalHeight = height;
     this.chart?.applyOptions({ width, height });
+    this.syncIndicatorPaneHeight();
+  }
+
+  private syncIndicatorPaneHeight(): void {
+    if (!this.chart || this.chart.panes().length < 2) return;
+    const indHeight = Math.max(60, Math.round(this.totalHeight * 0.25));
+    this.chart.panes()[1].setHeight(indHeight);
   }
 
   setData(bars: Bar[]): void {
+    this.bars = bars;
     this.candleSeries?.setData(bars);
+  }
+
+  /** Prepend older bars and keep the viewport anchored to the current view. */
+  prependBars(newBars: Bar[]): void {
+    if (!this.candleSeries || !this.chart) return;
+    const range = this.chart.timeScale().getVisibleLogicalRange();
+    this.bars = [...newBars, ...this.bars];
+    this.candleSeries.setData(this.bars as Parameters<typeof this.candleSeries.setData>[0]);
+    if (range) {
+      this.chart.timeScale().setVisibleLogicalRange({
+        from: range.from + newBars.length,
+        to:   range.to  + newBars.length,
+      });
+    }
+  }
+
+  getOldestBarTime(): number | null {
+    return this.bars.length > 0 ? (this.bars[0].time as number) : null;
+  }
+
+  getBars(): Bar[] {
+    return this.bars;
+  }
+
+  subscribeVisibleLogicalRangeChange(handler: (range: LogicalRange | null) => void): () => void {
+    if (!this.chart) return () => {};
+    this.chart.timeScale().subscribeVisibleLogicalRangeChange(handler);
+    return () => this.chart?.timeScale().unsubscribeVisibleLogicalRangeChange(handler);
+  }
+
+  getVisibleLogicalRange(): LogicalRange | null {
+    return this.chart?.timeScale().getVisibleLogicalRange() ?? null;
+  }
+
+  /** Expose raw chart for use by BacktestChartComponent (pane mode). */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getChart(): any {
+    return this.chart;
+  }
+
+  /** Lazily creates pane 1 for indicator series; no-op if it already exists. */
+  ensureIndicatorPane(): void {
+    if (!this.chart) return;
+    if (this.chart.panes().length < 2) {
+      const indHeight = Math.max(60, Math.round(this.totalHeight * 0.25));
+      this.chart.addPane().setHeight(indHeight);
+    }
+  }
+
+  /** Removes pane 1 (indicator pane) if present. */
+  removeIndicatorPane(): void {
+    if (!this.chart) return;
+    if (this.chart.panes().length > 1) {
+      this.chart.removePane(1);
+    }
   }
 
   updateBar(bar: Bar): void {
