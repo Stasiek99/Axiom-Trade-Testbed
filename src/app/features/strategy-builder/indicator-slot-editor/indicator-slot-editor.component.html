@@ -5,7 +5,7 @@
     <mat-form-field appearance="outline" class="category-field">
       <mat-label>{{ lang.t('slot.category') }}</mat-label>
       <mat-select [value]="category()" (selectionChange)="onCategoryChange($event.value)">
-        @for (cat of CATEGORIES; track cat) {
+        @for (cat of availableCategories(); track cat) {
           <mat-option [value]="cat">{{ lang.t('category.' + cat) }}</mat-option>
         }
       </mat-select>

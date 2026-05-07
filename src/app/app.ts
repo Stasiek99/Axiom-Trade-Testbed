@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { LangService } from './core/services/lang.service';
+import { BacktestStore } from './core/backtest/backtest.store';
 import type { Lang } from './core/i18n/translations';
 
 @Component({
@@ -16,7 +17,8 @@ import type { Lang } from './core/i18n/translations';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly lang = inject(LangService);
+  protected readonly lang          = inject(LangService);
+  protected readonly backtestStore = inject(BacktestStore);
 
   setLang(lang: Lang): void {
     this.lang.setLang(lang);

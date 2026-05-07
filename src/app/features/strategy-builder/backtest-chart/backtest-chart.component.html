@@ -42,6 +42,11 @@
       <!-- Chart canvas — standalone mode only; pane mode renders into the main chart -->
       @if (!paneMode) {
         <div class="chart-wrap" #container></div>
+        <div class="dd-header">
+          <mat-icon class="dd-icon">trending_down</mat-icon>
+          <span>{{ lang.t('backtest.drawdown') }}</span>
+        </div>
+        <div class="drawdown-wrap" #drawdownContainer></div>
       }
 
       <!-- Hint -->
@@ -50,12 +55,20 @@
         {{ lang.t('backtest.chartHint') }}
       </p>
 
-      @if (showViewBtn) {
+      @if (showViewBtn || (showStatsBtn && result.totalTrades > 0)) {
         <div class="view-btn-row">
-          <button mat-flat-button class="view-chart-btn" (click)="goToChart()">
-            <mat-icon>open_in_new</mat-icon>
-            {{ lang.t('backtest.viewOnChart') }}
-          </button>
+          @if (showViewBtn) {
+            <button mat-flat-button class="view-chart-btn" (click)="goToChart()">
+              <mat-icon>open_in_new</mat-icon>
+              {{ lang.t('backtest.viewOnChart') }}
+            </button>
+          }
+          @if (showStatsBtn && result.totalTrades > 0) {
+            <button mat-flat-button class="view-stats-btn" (click)="goToStats()">
+              <mat-icon>insights</mat-icon>
+              {{ lang.t('strategy.viewStats') }}
+            </button>
+          }
         </div>
       }
 

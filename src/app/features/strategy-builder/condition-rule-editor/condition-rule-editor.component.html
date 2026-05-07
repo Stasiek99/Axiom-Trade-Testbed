@@ -43,6 +43,7 @@
       </div>
       <app-indicator-slot-editor
         [slot]="secondarySlot()"
+        [allowedShapes]="secondaryAllowedShapes()"
         (slotChange)="onSecondarySlotChange($event)"
       />
     </div>

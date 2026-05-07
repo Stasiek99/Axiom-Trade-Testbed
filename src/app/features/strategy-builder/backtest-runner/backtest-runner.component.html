@@ -63,40 +63,8 @@
 
   <!-- ── Results ───────────────────────────────────────────────────────────── -->
   @if (store.result(); as r) {
-
     @if (r.totalTrades === 0) {
       <p class="state-msg no-trades-msg">{{ lang.t('backtest.noTrades') }}</p>
-    } @else {
-      <div class="stats-grid">
-
-        <div class="stat-card">
-          <span class="stat-label">{{ lang.t('backtest.trades') }}</span>
-          <span class="stat-value">{{ r.totalTrades }}</span>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">{{ lang.t('backtest.winRate') }}</span>
-          <span class="stat-value" [class.positive]="r.winRate >= 50">{{ fmt(r.winRate) }}%</span>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">{{ lang.t('backtest.totalReturn') }}</span>
-          <span class="stat-value" [class.positive]="r.totalReturn > 0" [class.negative]="r.totalReturn < 0">
-            {{ r.totalReturn > 0 ? '+' : '' }}{{ fmt(r.totalReturn) }}%
-          </span>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">{{ lang.t('backtest.maxDrawdown') }}</span>
-          <span class="stat-value negative">-{{ fmt(r.maxDrawdown) }}%</span>
-        </div>
-
-      </div>
-
-      <p class="equity-hint">
-        <mat-icon class="hint-icon">show_chart</mat-icon>
-        {{ lang.t('backtest.equityCurve') }}
-      </p>
     }
   }
 

@@ -20,6 +20,7 @@ import { SymbolSelectorComponent } from './symbol-selector/symbol-selector.compo
 const TIMEFRAME_SECONDS: Record<string, number> = {
   M1: 60, M5: 300, M15: 900, H1: 3600, H4: 14400, D1: 86400,
 };
+const INITIAL_CAPITAL = 10_000;
 
 @Component({
   selector: 'app-chart',
@@ -42,7 +43,7 @@ export class ChartComponent implements AfterViewInit {
   @ViewChild('chartContainer') chartContainer!: ElementRef<HTMLDivElement>;
 
   readonly symbol       = signal<string>('ETH/USD');
-  readonly timeframe    = signal<string>('H1');
+  readonly timeframe    = signal<string>('D1');
   readonly currentPrice = signal<number | null>(null);
   readonly priceChange  = signal<number>(0);
   readonly loading      = signal<boolean>(true);
@@ -200,11 +201,14 @@ export class ChartComponent implements AfterViewInit {
 
   private refreshBacktestIndicators(): void {
     if (!this.backtestStore.result()) return;
-    const indicators = this.engine.computeIndicatorSeries(
-      this.chartService.getBars(),
-      this.strategyStore.config(),
-    );
-    this.backtestStore.updateIndicators(indicators);
+    try {
+      const result = this.engine.run(
+        this.chartService.getBars(),
+        this.strategyStore.config(),
+        INITIAL_CAPITAL,
+      );
+      this.backtestStore.setResult(result);
+    } catch { /* ignore recompute errors — keep existing result */ }
   }
 
   private fillGap(): void {

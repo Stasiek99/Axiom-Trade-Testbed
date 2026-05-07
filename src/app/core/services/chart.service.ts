@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { createChart, CandlestickSeries, LineSeries, CrosshairMode, MouseEventParams, Time, LogicalRange } from 'lightweight-charts';
+import { createChart, CandlestickSeries, LineSeries, CrosshairMode, MouseEventParams, Time, LogicalRange, createSeriesMarkers } from 'lightweight-charts';
+import type { UTCTimestamp } from 'lightweight-charts';
 import { Bar } from '../models/bar.model';
 import type { ChartPoint } from '../indicators';
-import type { IndicatorSeries } from '../backtest/backtest.model';
+import type { IndicatorSeries, TradeResult } from '../backtest/backtest.model';
 
 export interface CrosshairData {
   time: number;
@@ -20,6 +21,8 @@ export class ChartService {
   private indSeries: any[] = [];
   private bars: Bar[] = [];
   private totalHeight = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private tradeMarkersHandle: any = null;
 
   init(container: HTMLElement): void {
     this.totalHeight = container.clientHeight;
@@ -55,10 +58,43 @@ export class ChartService {
   }
 
   destroy(): void {
+    this.clearTradeMarkers();
     this.chart?.remove();
     this.chart = null;
     this.candleSeries = null;
     this.bars = [];
+  }
+
+  setTradeMarkers(trades: TradeResult[]): void {
+    this.clearTradeMarkers();
+    if (!this.candleSeries || !trades.length) return;
+
+    const pts = [
+      ...trades.map(t => ({
+        time:     t.entryTime as UTCTimestamp,
+        position: 'belowBar' as const,
+        color:    '#34d399',
+        shape:    'arrowUp' as const,
+        size:     1,
+      })),
+      ...trades.map(t => ({
+        time:     t.exitTime as UTCTimestamp,
+        position: 'aboveBar' as const,
+        color:    '#f87171',
+        shape:    'arrowDown' as const,
+        size:     1,
+      })),
+    ].sort((a, b) => (a.time as number) - (b.time as number));
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.tradeMarkersHandle = createSeriesMarkers(this.candleSeries as any, pts);
+  }
+
+  clearTradeMarkers(): void {
+    if (this.tradeMarkersHandle) {
+      try { this.tradeMarkersHandle.detach(); } catch { /* already detached */ }
+      this.tradeMarkersHandle = null;
+    }
   }
 
   resize(width: number, height: number): void {

@@ -99,10 +99,12 @@
 .view-btn-row {
   display:         flex;
   justify-content: flex-end;
+  gap:             8px;
   padding-top:     4px;
 }
 
-.view-chart-btn {
+.view-chart-btn,
+.view-stats-btn {
   background:  #22d3ee;
   color:       #000;
   font-weight: 600;
@@ -111,6 +113,32 @@
   &:hover:not(:disabled) { background: #06b6d4; }
 
   mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
+}
+
+// ── Drawdown mini-chart ───────────────────────────────────────────────────────
+
+.dd-header {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+  font-size:   0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color:       #f87171;
+  opacity:     0.7;
+
+  .dd-icon {
+    font-size: 13px;
+    width:     13px;
+    height:    13px;
+  }
+}
+
+.drawdown-wrap {
+  border-radius: 4px;
+  overflow:      hidden;
+  border:        1px solid #1e2738;
 }
 
 // ── Hint ──────────────────────────────────────────────────────────────────────

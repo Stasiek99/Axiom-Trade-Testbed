@@ -54,11 +54,12 @@ export class BinanceWsService {
             subscriber.next({
               type: 'bar',
               bar: {
-                time:  Math.floor(k.t / 1000) as UTCTimestamp,
-                open:  parseFloat(k.o),
-                high:  parseFloat(k.h),
-                low:   parseFloat(k.l),
-                close: parseFloat(k.c),
+                time:   Math.floor(k.t / 1000) as UTCTimestamp,
+                open:   parseFloat(k.o),
+                high:   parseFloat(k.h),
+                low:    parseFloat(k.l),
+                close:  parseFloat(k.c),
+                volume: parseFloat(k.v),
               },
             });
           } else {

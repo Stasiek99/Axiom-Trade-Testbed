@@ -201,11 +201,11 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 | **Sharpe Ratio** | Mean daily return / StdDev daily return × √252 |
 | **Avg Trade Duration** | Mean bars held per trade |
 
-- [ ] `StatsPanel` component — card grid displaying all metrics post-backtest
-- [ ] `TradeLogComponent` — scrollable table of every individual trade with columns: entry time/price, exit time/price, PnL, exit reason (stop loss / take profit / signal reversal), color-coded rows
-- [ ] `TradeMarkersComponent` — render ▲ (green) entry and ▼ (red) exit arrows on the candlestick chart at exact timestamps
-- [ ] Drawdown chart — separate area series below the main chart
-- [ ] Export to CSV: full trade log + equity curve
+- [x] `StatsPanel` component — card grid displaying all metrics post-backtest
+- [x] `TradeLogComponent` — scrollable table of every individual trade with columns: entry time/price, exit time/price, PnL, exit reason (stop loss / take profit / signal reversal), color-coded rows
+- [x] `TradeMarkersComponent` — render ▲ (green) entry and ▼ (red) exit arrows on the candlestick chart at exact timestamps
+- [x] Drawdown chart — separate area series below the main chart
+- [x] Export to CSV: full trade log + equity curve
 
 **Deliverable:** After backtest, chart shows entry/exit markers; stats panel shows all metrics.
 
