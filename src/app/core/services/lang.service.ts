@@ -4,6 +4,7 @@ import { type Lang, TRANSLATIONS } from '../i18n/translations';
 import { INDICATORS_I18N } from '../i18n/indicators.i18n';
 import { PARAM_DESCRIPTIONS_PL } from '../i18n/param-descriptions.i18n';
 import { FORMULA_LEGEND_PL } from '../i18n/formula-legend.i18n';
+import { PARAM_CATALOG_PL } from '../i18n/param-catalog-pl.i18n';
 
 @Injectable({ providedIn: 'root' })
 export class LangService {
@@ -44,6 +45,13 @@ export class LangService {
       symbol: entry.symbol,
       explanation: pl?.[i] ?? entry.explanation,
     }));
+  }
+
+  /** Translates a catalog parameter description using the catalog symbol as the key.
+   *  Falls back to the English catalog description when no translation exists. */
+  catalogParamDesc(indicatorId: string, symbol: string, fallback: string): string {
+    if (this._lang() === 'en') return fallback;
+    return PARAM_CATALOG_PL[`${indicatorId}.${symbol}`] ?? fallback;
   }
 
   /** Translates an OptionParam label (e.g. "Fast Period" → "Szybki okres").
