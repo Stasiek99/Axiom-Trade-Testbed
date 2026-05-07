@@ -108,12 +108,10 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- ── Run ────────────────────────────────────────────────────────────── -->
-  <div class="actions-row">
-    <button mat-flat-button class="run-btn" [matTooltip]="lang.t('strategy.backtestPhase4')">
-      <mat-icon>play_arrow</mat-icon>
-      {{ lang.t('strategy.runBacktest') }}
-    </button>
-  </div>
+  <!-- ── Backtest Runner ──────────────────────────────────────────────── -->
+  <app-backtest-runner />
+
+  <!-- ── Indicator preview chart ───────────────────────────────────────── -->
+  <app-backtest-chart [showViewBtn]="true" />
 
 </div>

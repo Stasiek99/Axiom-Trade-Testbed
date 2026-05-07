@@ -89,6 +89,11 @@ export class IndicatorSlotEditorComponent implements OnInit {
     }
   }
 
+  protected paramValue(key: string, fallback: number | string | boolean): number | string | boolean {
+    const v = this.paramValues();
+    return key in v ? v[key] : fallback;
+  }
+
   protected onCategoryChange(cat: IndicatorCategory): void {
     this.category.set(cat);
     const inds = indicatorRegistry.getByCategory(cat);

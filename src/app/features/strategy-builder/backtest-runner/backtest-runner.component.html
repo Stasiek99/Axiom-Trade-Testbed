@@ -1,0 +1,103 @@
+<div class="runner-card">
+
+  <!-- ── Controls row ─────────────────────────────────────────────────────── -->
+  <div class="controls-row">
+
+    <mat-form-field appearance="outline" class="ctrl-field">
+      <mat-label>{{ lang.t('backtest.symbol') }}</mat-label>
+      <mat-select [(value)]="symbol" [disabled]="store.isRunning()">
+        @for (s of SYMBOLS; track s) {
+          <mat-option [value]="s">{{ s }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="ctrl-field">
+      <mat-label>{{ lang.t('backtest.timeframe') }}</mat-label>
+      <mat-select [(value)]="timeframe" [disabled]="store.isRunning()">
+        @for (tf of TIMEFRAMES; track tf) {
+          <mat-option [value]="tf">{{ tf }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="btn-group">
+      @if (store.status() !== 'running') {
+        <button
+          mat-flat-button
+          class="run-btn"
+          [disabled]="store.isRunning()"
+          (click)="run()"
+        >
+          <mat-icon>play_arrow</mat-icon>
+          {{ lang.t('backtest.run') }}
+        </button>
+      } @else {
+        <button mat-stroked-button class="stop-btn" (click)="stop()">
+          <mat-icon>stop</mat-icon>
+          {{ lang.t('backtest.stop') }}
+        </button>
+      }
+
+      @if (store.status() === 'done' || store.status() === 'error') {
+        <button mat-icon-button class="reset-btn" [matTooltip]="lang.t('backtest.reset')" (click)="reset()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      }
+    </div>
+
+  </div>
+
+  <!-- ── Progress bar (running) ────────────────────────────────────────────── -->
+  @if (store.status() === 'running') {
+    <mat-progress-bar mode="indeterminate" class="progress-bar" />
+  }
+
+  <!-- ── Error ─────────────────────────────────────────────────────────────── -->
+  @if (store.status() === 'error') {
+    <p class="state-msg error-msg">
+      <mat-icon>error_outline</mat-icon>
+      {{ lang.t('backtest.error') }}
+    </p>
+  }
+
+  <!-- ── Results ───────────────────────────────────────────────────────────── -->
+  @if (store.result(); as r) {
+
+    @if (r.totalTrades === 0) {
+      <p class="state-msg no-trades-msg">{{ lang.t('backtest.noTrades') }}</p>
+    } @else {
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.trades') }}</span>
+          <span class="stat-value">{{ r.totalTrades }}</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.winRate') }}</span>
+          <span class="stat-value" [class.positive]="r.winRate >= 50">{{ fmt(r.winRate) }}%</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.totalReturn') }}</span>
+          <span class="stat-value" [class.positive]="r.totalReturn > 0" [class.negative]="r.totalReturn < 0">
+            {{ r.totalReturn > 0 ? '+' : '' }}{{ fmt(r.totalReturn) }}%
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">{{ lang.t('backtest.maxDrawdown') }}</span>
+          <span class="stat-value negative">-{{ fmt(r.maxDrawdown) }}%</span>
+        </div>
+
+      </div>
+
+      <p class="equity-hint">
+        <mat-icon class="hint-icon">show_chart</mat-icon>
+        {{ lang.t('backtest.equityCurve') }}
+      </p>
+    }
+  }
+
+</div>

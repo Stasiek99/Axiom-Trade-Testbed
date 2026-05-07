@@ -1,42 +1,59 @@
-<div class="chart-wrapper">
-  <div class="chart-header">
-    <div class="symbol-info">
-      <app-symbol-selector (symbolChange)="onSymbolChange($event)" />
-      <span class="symbol">{{ symbol() }}</span>
-      <span class="price" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
-        {{ currentPrice() | number:'1.2-2' }}
-      </span>
-      <span class="change" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
-        {{ priceChange() >= 0 ? '+' : '' }}{{ priceChange() | number:'1.2-2' }}
-      </span>
+<div class="page-layout">
+
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <div class="symbol-info">
+        <app-symbol-selector (symbolChange)="onSymbolChange($event)" />
+        <span class="symbol">{{ symbol() }}</span>
+        <span class="price" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
+          {{ currentPrice() | number:'1.2-2' }}
+        </span>
+        <span class="change" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
+          {{ priceChange() >= 0 ? '+' : '' }}{{ priceChange() | number:'1.2-2' }}
+        </span>
+      </div>
+
+      <mat-button-toggle-group
+        [value]="timeframe()"
+        (change)="onTimeframeChange($event.value)"
+        class="tf-group"
+      >
+        @for (tf of timeframes; track tf) {
+          <mat-button-toggle [value]="tf">{{ tf }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
     </div>
 
-    <mat-button-toggle-group
-      [value]="timeframe()"
-      (change)="onTimeframeChange($event.value)"
-      class="tf-group"
-    >
-      @for (tf of timeframes; track tf) {
-        <mat-button-toggle [value]="tf">{{ tf }}</mat-button-toggle>
+    <div class="chart-canvas" #chartContainer>
+      @if (loading()) {
+        <div class="spinner-overlay">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
       }
-    </mat-button-toggle-group>
+
+      @if (crosshair(); as ch) {
+        <div class="crosshair-tooltip">
+          <span class="ch-time">{{ formatCrosshairTime(ch.time) }}</span>
+          <span class="ch-label">O</span><span [class.up]="ch.close >= ch.open" [class.down]="ch.close < ch.open">{{ ch.open | number:'1.2-5' }}</span>
+          <span class="ch-label">H</span><span class="up">{{ ch.high | number:'1.2-5' }}</span>
+          <span class="ch-label">L</span><span class="down">{{ ch.low | number:'1.2-5' }}</span>
+          <span class="ch-label">C</span><span [class.up]="ch.close >= ch.open" [class.down]="ch.close < ch.open">{{ ch.close | number:'1.2-5' }}</span>
+        </div>
+      }
+
+      @if (backtestStore.result(); as r) {
+        <div class="chart-legend">
+          @for (ind of dedupIndicators(r.indicators); track ind.id) {
+            <span class="legend-entry">
+              <span class="legend-dot" [style.background]="ind.color"></span>
+              <span class="legend-label">{{ ind.name }}</span>
+            </span>
+          }
+        </div>
+      }
+    </div>
   </div>
 
-  <div class="chart-canvas" #chartContainer>
-    @if (loading()) {
-      <div class="spinner-overlay">
-        <mat-spinner diameter="32"></mat-spinner>
-      </div>
-    }
+  <app-backtest-chart [showClearBtn]="true" />
 
-    @if (crosshair(); as ch) {
-      <div class="crosshair-tooltip">
-        <span class="ch-time">{{ formatCrosshairTime(ch.time) }}</span>
-        <span class="ch-label">O</span><span [class.up]="ch.close >= ch.open" [class.down]="ch.close < ch.open">{{ ch.open | number:'1.2-5' }}</span>
-        <span class="ch-label">H</span><span class="up">{{ ch.high | number:'1.2-5' }}</span>
-        <span class="ch-label">L</span><span class="down">{{ ch.low | number:'1.2-5' }}</span>
-        <span class="ch-label">C</span><span [class.up]="ch.close >= ch.open" [class.down]="ch.close < ch.open">{{ ch.close | number:'1.2-5' }}</span>
-      </div>
-    }
-  </div>
 </div>

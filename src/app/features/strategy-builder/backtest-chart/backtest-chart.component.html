@@ -1,0 +1,64 @@
+@if (store.result(); as result) {
+  @if (result.indicators.length > 0) {
+    <div class="ind-chart-card">
+
+      <!-- Header -->
+      <div class="card-header">
+        <mat-icon class="header-icon">stacked_line_chart</mat-icon>
+        <span>{{ lang.t('backtest.indicatorChart') }}</span>
+        @if (showClearBtn) {
+          <button
+            mat-icon-button
+            class="clear-btn"
+            [matTooltip]="lang.t('backtest.clearStrategy')"
+            (click)="clearStrategy()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Legend row -->
+      <div class="legend-row">
+        @for (ind of dedup(result.indicators); track ind.id) {
+          <span class="legend-item">
+            <span class="legend-dot" [style.background]="ind.color"></span>
+            <span class="legend-label" [style.color]="ind.color">{{ ind.name }}</span>
+          </span>
+        }
+        <span class="legend-sep"></span>
+        <span class="signal-item entry">
+          <span class="arrow">▲</span>
+          {{ lang.t('backtest.entrySignal') }}
+          <span class="count">({{ result.trades.length }})</span>
+        </span>
+        <span class="signal-item exit">
+          <span class="arrow">▼</span>
+          {{ lang.t('backtest.exitSignal') }}
+          <span class="count">({{ result.trades.length }})</span>
+        </span>
+      </div>
+
+      <!-- Chart canvas — standalone mode only; pane mode renders into the main chart -->
+      @if (!paneMode) {
+        <div class="chart-wrap" #container></div>
+      }
+
+      <!-- Hint -->
+      <p class="hint">
+        <mat-icon class="hint-icon">info_outline</mat-icon>
+        {{ lang.t('backtest.chartHint') }}
+      </p>
+
+      @if (showViewBtn) {
+        <div class="view-btn-row">
+          <button mat-flat-button class="view-chart-btn" (click)="goToChart()">
+            <mat-icon>open_in_new</mat-icon>
+            {{ lang.t('backtest.viewOnChart') }}
+          </button>
+        </div>
+      }
+
+    </div>
+  }
+}

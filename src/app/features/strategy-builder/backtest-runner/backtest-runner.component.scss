@@ -1,0 +1,137 @@
+.runner-card {
+  background: #0f1117;
+  border: 1px solid #1e2030;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ctrl-field {
+  width: 140px;
+  flex-shrink: 0;
+
+  .mat-mdc-form-field-subscript-wrapper { display: none; }
+}
+
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.run-btn {
+  background: #22d3ee;
+  color: #000;
+  font-weight: 600;
+
+  &:hover:not(:disabled) { background: #06b6d4; }
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
+}
+
+.stop-btn {
+  border-color: rgba(251, 146, 60, 0.5);
+  color: #fb923c;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
+}
+
+.reset-btn {
+  color: #5a6070;
+  &:hover { color: #c9d1d9; }
+}
+
+// ── Progress bar ─────────────────────────────────────────────────────────────
+
+.progress-bar {
+  border-radius: 2px;
+
+  ::ng-deep .mdc-linear-progress__bar-inner {
+    border-color: #22d3ee;
+  }
+  ::ng-deep .mdc-linear-progress__buffer-bar {
+    background: rgba(34, 211, 238, 0.12);
+  }
+}
+
+// ── State messages ───────────────────────────────────────────────────────────
+
+.state-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.85rem;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.error-msg   { color: #f87171; }
+.no-trades-msg { color: #5a6070; }
+
+// ── Stats grid ───────────────────────────────────────────────────────────────
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+
+  @media (max-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5a6070;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #d4d8e0;
+
+  &.positive { color: #34d399; }
+  &.negative  { color: #f87171; }
+}
+
+// ── Equity hint ──────────────────────────────────────────────────────────────
+
+.equity-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 0.75rem;
+  color: #22d3ee;
+  opacity: 0.7;
+
+  .hint-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
