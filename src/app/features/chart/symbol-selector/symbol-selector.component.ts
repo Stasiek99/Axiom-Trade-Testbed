@@ -1,7 +1,7 @@
 import { Component, Input, inject, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
 import { LangService } from '../../../core/services/lang.service';
 
 export interface SymbolGroup { label: string; labelKey: string; symbols: string[]; }
@@ -28,7 +28,7 @@ export const ALPACA_SYMBOLS = new Set(
 
 @Component({
   selector: 'app-symbol-selector',
-  imports: [FormsModule, MatSelectModule, MatFormFieldModule],
+  imports: [MatButtonModule, MatMenuModule, MatIconModule],
   templateUrl: './symbol-selector.component.html',
   styleUrl: './symbol-selector.component.scss',
 })

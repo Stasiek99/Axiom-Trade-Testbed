@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Observable, retry, timer } from 'rxjs';
+import { Observable } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { Bar } from '../models/bar.model';
 
 export interface WsEvent {
-  type: 'bar' | 'trade' | 'connected';
+  type: 'bar' | 'trade' | 'connected' | 'reconnecting';
   bar?: Bar;
   price?: number;
   tradeTime?: number;
+  attempt?: number;
 }
 
 const SYMBOL_MAP: Record<string, string> = {
@@ -35,64 +36,73 @@ export class BinanceWsService {
     const url = `wss://stream.binance.com:9443/ws/${binanceSymbol}@kline_${binanceInterval}`;
 
     return new Observable<WsEvent>(subscriber => {
-      const ws = new WebSocket(url);
-      let intentionallyClosed = false;
-      let hasErrored = false;
+      let disposed = false;
+      let attempt = 0;
+      let currentWs: WebSocket | null = null;
+      let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-      ws.onopen = () => {
-        subscriber.next({ type: 'connected' });
-      };
+      function connect(): void {
+        if (disposed) return;
+        const ws = new WebSocket(url);
+        currentWs = ws;
 
-      ws.onmessage = event => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.e !== 'kline') return;
+        ws.onopen = () => {
+          attempt = 0;
+          subscriber.next({ type: 'connected' });
+        };
 
-          const k = msg.k;
+        ws.onmessage = event => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.e !== 'kline') return;
 
-          if (k.x === true) {
-            subscriber.next({
-              type: 'bar',
-              bar: {
-                time:   Math.floor(k.t / 1000) as UTCTimestamp,
-                open:   parseFloat(k.o),
-                high:   parseFloat(k.h),
-                low:    parseFloat(k.l),
-                close:  parseFloat(k.c),
-                volume: parseFloat(k.v),
-              },
-            });
-          } else {
-            subscriber.next({
-              type:      'trade',
-              price:     parseFloat(k.c),
-              tradeTime: Math.floor(k.t / 1000),
-            });
+            const k = msg.k;
+
+            if (k.x === true) {
+              subscriber.next({
+                type: 'bar',
+                bar: {
+                  time:   Math.floor(k.t / 1000) as UTCTimestamp,
+                  open:   parseFloat(k.o),
+                  high:   parseFloat(k.h),
+                  low:    parseFloat(k.l),
+                  close:  parseFloat(k.c),
+                  volume: parseFloat(k.v),
+                },
+              });
+            } else {
+              subscriber.next({
+                type:      'trade',
+                price:     parseFloat(k.c),
+                tradeTime: Math.floor(k.t / 1000),
+              });
+            }
+          } catch (err) {
+            console.error('[BinanceWsService] Message parse error', err);
           }
-        } catch (err) {
-          subscriber.error(err);
-        }
-      };
+        };
 
-      ws.onerror = () => {
-        hasErrored = true;
-        subscriber.error(new Error('Binance WS error'));
-      };
+        ws.onerror = () => {
+          // onclose always fires after onerror — reconnect happens there
+          console.error('[BinanceWsService] WebSocket error');
+        };
 
-      ws.onclose = () => {
-        if (!intentionallyClosed && !hasErrored) {
-          subscriber.error(new Error('Binance WS closed unexpectedly'));
-        } else if (intentionallyClosed) {
-          subscriber.complete();
-        }
-      };
+        ws.onclose = () => {
+          if (disposed) return;
+          attempt++;
+          const delay = Math.min(1000 * 2 ** attempt, 30_000);
+          subscriber.next({ type: 'reconnecting', attempt });
+          reconnectTimer = setTimeout(connect, delay);
+        };
+      }
+
+      connect();
 
       return () => {
-        intentionallyClosed = true;
-        ws.close();
+        disposed = true;
+        if (reconnectTimer != null) clearTimeout(reconnectTimer);
+        currentWs?.close();
       };
-    }).pipe(
-      retry({ count: 10, delay: (_, attempt) => timer(Math.min(1000 * 2 ** attempt, 30_000)) })
-    );
+    });
   }
 }

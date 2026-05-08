@@ -46,3 +46,9 @@ Thumbs.db
 # Local secrets — never commit
 .env
 src/environments/environment.ts
+
+# Dev/agent tooling — not part of the app
+screenshots/
+.tmp/
+subagent.ps1
+.claude/

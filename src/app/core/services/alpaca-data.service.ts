@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, map, catchError, EMPTY } from 'rxjs';
+import { Observable, of, map, catchError, throwError } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { environment } from '../../../environments/environment';
 import { Bar } from '../models/bar.model';
@@ -115,7 +115,7 @@ export class AlpacaDataService {
       }),
       catchError(error => {
         console.error('[AlpacaDataService] Error fetching bars', error);
-        return EMPTY;
+        return throwError(() => error);
       }),
     );
   }
@@ -137,7 +137,7 @@ export class AlpacaDataService {
       map(r => this.mapBars(r.bars ?? []).reverse()),
       catchError(error => {
         console.error('[AlpacaDataService] Error fetching historical bars', error);
-        return EMPTY;
+        return throwError(() => error);
       }),
     );
   }
@@ -154,7 +154,7 @@ export class AlpacaDataService {
       map(r => this.mapBars(r.bars ?? [])),
       catchError(error => {
         console.error('[AlpacaDataService] Error fetching gap bars', error);
-        return EMPTY;
+        return throwError(() => error);
       }),
     );
   }

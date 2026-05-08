@@ -141,7 +141,12 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'symbol.group.stocks': 'Akcje',
 
     // ── Chart ────────────────────────────────────────────────────────────
-    'chart.priceChangeSince': 'Zmiana od zamknięcia poprzedniej świecy',
+    'chart.priceChangeSince':  'Zmiana od zamknięcia poprzedniej świecy',
+    'chart.ws.connecting':     'Łączenie...',
+    'chart.ws.reconnecting':   'Ponowne łączenie...',
+    'chart.error.apiDown':     'Brak połączenia z API',
+    'chart.error.rateLimit':   'Limit zapytań przekroczony',
+    'chart.error.retry':       'Spróbuj ponownie',
 
     // ── Learn page ───────────────────────────────────────────────────────
     'nav.learn':             'Edukacja',
@@ -385,7 +390,12 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'symbol.group.stocks': 'Stocks',
 
     // ── Chart ────────────────────────────────────────────────────────────
-    'chart.priceChangeSince': 'Change since previous candle close',
+    'chart.priceChangeSince':  'Change since previous candle close',
+    'chart.ws.connecting':     'Connecting...',
+    'chart.ws.reconnecting':   'Reconnecting...',
+    'chart.error.apiDown':     'Unable to load data',
+    'chart.error.rateLimit':   'Rate limit reached',
+    'chart.error.retry':       'Retry',
 
     // ── Learn page ───────────────────────────────────────────────────────
     'nav.learn':             'Learn',

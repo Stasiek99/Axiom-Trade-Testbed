@@ -51,6 +51,15 @@
   border-left: 2px solid #00bcd4;
 }
 
+.hamburger-btn {
+  display: none;
+  margin-right: 4px;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
 .lang-btn {
   display: flex;
   align-items: center;
@@ -82,4 +91,5 @@
     margin-left: -2px;
     opacity: 0.7;
   }
+
 }

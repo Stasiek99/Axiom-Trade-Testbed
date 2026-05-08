@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, DestroyRef, ElementRef, ViewChild, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject, switchMap, finalize, EMPTY } from 'rxjs';
+import { Subject, switchMap, finalize, EMPTY, catchError } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { BinanceDataService } from '../../core/services/binance-data.service';
 import { BinanceWsService, WsEvent } from '../../core/services/binance-ws.service';
@@ -26,7 +28,7 @@ const INITIAL_CAPITAL = 10_000;
 
 @Component({
   selector: 'app-chart',
-  imports: [CommonModule, MatButtonToggleModule, MatProgressSpinnerModule, MatTooltipModule, SymbolSelectorComponent, BacktestChartComponent],
+  imports: [CommonModule, MatButtonModule, MatButtonToggleModule, MatIconModule, MatProgressSpinnerModule, MatTooltipModule, SymbolSelectorComponent, BacktestChartComponent],
   providers: [ChartService],
   templateUrl: './chart.component.html',
   styleUrl: './chart.component.scss',
@@ -51,6 +53,9 @@ export class ChartComponent implements AfterViewInit {
   readonly priceChange  = signal<number>(0);
   readonly loading      = signal<boolean>(true);
   readonly crosshair    = signal<CrosshairData | null>(null);
+  readonly wsStatus     = signal<'connecting' | 'live' | 'reconnecting'>('connecting');
+  readonly apiError     = signal<'down' | 'rate-limit' | null>(null);
+  readonly liveStream   = computed(() => !ALPACA_SYMBOLS.has(this.symbol()));
 
   readonly timeframes = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
 
@@ -93,7 +98,12 @@ export class ChartComponent implements AfterViewInit {
       ),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((event: WsEvent) => {
+      if (event.type === 'reconnecting') {
+        this.wsStatus.set('reconnecting');
+        return;
+      }
       if (event.type === 'connected') {
+        this.wsStatus.set('live');
         if (this.hasConnected) this.fillGap();
         this.hasConnected = true;
         return;
@@ -164,6 +174,10 @@ export class ChartComponent implements AfterViewInit {
 
     obs$.pipe(
       takeUntilDestroyed(this.destroyRef),
+      catchError(() => {
+        this.historyExhausted = true;
+        return EMPTY;
+      }),
       finalize(() => {
         this.isFetchingHistory = false;
         if (barsReceived && !this.historyExhausted) {
@@ -190,19 +204,27 @@ export class ChartComponent implements AfterViewInit {
       ? this.alpacaData.getStockBars(this.symbol(), this.timeframe())
       : this.binanceData.getCryptoBars(this.symbol(), this.timeframe());
 
-    obs$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((bars: Bar[]) => {
-      if (gen !== this.loadGeneration) return;
-      if (bars.length > 0) {
-        this.chartService.setData(bars);
-        this.chartService.fitContent();
-        const last = bars.at(-1)!;
-        this.currentPrice.set(last.close);
-        this.currentBar  = null;
-        this.lastBarTime = last.time as number;
-        const prev = bars.at(-2);
-        this.priceChange.set(prev ? +(last.close - prev.close).toFixed(2) : 0);
-      }
-      this.loading.set(false);
+    obs$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (bars: Bar[]) => {
+        if (gen !== this.loadGeneration) return;
+        this.apiError.set(null);
+        if (bars.length > 0) {
+          this.chartService.setData(bars);
+          this.chartService.fitContent();
+          const last = bars.at(-1)!;
+          this.currentPrice.set(last.close);
+          this.currentBar  = null;
+          this.lastBarTime = last.time as number;
+          const prev = bars.at(-2);
+          this.priceChange.set(prev ? +(last.close - prev.close).toFixed(2) : 0);
+        }
+        this.loading.set(false);
+      },
+      error: (err) => {
+        if (gen !== this.loadGeneration) return;
+        this.loading.set(false);
+        this.apiError.set(err?.status === 429 ? 'rate-limit' : 'down');
+      },
     });
   }
 
@@ -223,7 +245,10 @@ export class ChartComponent implements AfterViewInit {
     const start = new Date((this.lastBarTime + 1) * 1000).toISOString();
 
     this.binanceData.getCryptoBarsFrom(this.symbol(), this.timeframe(), start)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => EMPTY),
+      )
       .subscribe((bars: Bar[]) => {
         for (const bar of bars) {
           this.chartService.updateBar(bar);
@@ -242,6 +267,11 @@ export class ChartComponent implements AfterViewInit {
     return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
   }
 
+  retryLoad(): void {
+    this.apiError.set(null);
+    this.loadBars();
+  }
+
   onSymbolChange(sym: string): void {
     this.symbol.set(sym);
     this.backtestStore.setContext(sym, this.timeframe());
@@ -249,6 +279,8 @@ export class ChartComponent implements AfterViewInit {
     this.currentBar        = null;
     this.isFetchingHistory = false;
     this.historyExhausted  = false;
+    this.wsStatus.set('connecting');
+    this.apiError.set(null);
     this.chartService.setData([]);
     this.loadBars();
     this.stream$.next({ symbol: sym, timeframe: this.timeframe() });
@@ -261,6 +293,8 @@ export class ChartComponent implements AfterViewInit {
     this.currentBar        = null;
     this.isFetchingHistory = false;
     this.historyExhausted  = false;
+    this.wsStatus.set('connecting');
+    this.apiError.set(null);
     this.loadBars();
     this.stream$.next({ symbol: this.symbol(), timeframe: tf });
   }

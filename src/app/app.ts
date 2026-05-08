@@ -6,6 +6,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 import { LangService } from './core/services/lang.service';
 import { BacktestStore } from './core/backtest/backtest.store';
 import type { Lang } from './core/i18n/translations';
@@ -19,6 +22,12 @@ import type { Lang } from './core/i18n/translations';
 export class App {
   protected readonly lang          = inject(LangService);
   protected readonly backtestStore = inject(BacktestStore);
+
+  private readonly bp = inject(BreakpointObserver);
+  protected readonly isNarrow = toSignal(
+    this.bp.observe('(max-width: 768px)').pipe(map(s => s.matches)),
+    { initialValue: false }
+  );
 
   setLang(lang: Lang): void {
     this.lang.setLang(lang);
