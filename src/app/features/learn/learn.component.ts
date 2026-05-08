@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 
 import { INDICATORS_CATALOG } from '../../core/data/indicators.catalog';
+import { GLOSSARY_GROUPS, type GlossaryTermData } from '../../core/data/glossary.data';
 import { LangService } from '../../core/services/lang.service';
 import { IndicatorInfoComponent } from '../../shared/indicator-info/indicator-info.component';
 import type { TradingIndicatorCategory } from '../../core/indicators';
@@ -15,44 +16,6 @@ import type { TradingIndicatorCategory } from '../../core/indicators';
 const CATEGORIES: Array<TradingIndicatorCategory> = [
   'Moving Average', 'Oscillator', 'Momentum', 'Trend',
   'Volatility', 'Channels & Bands', 'Volume',
-];
-
-interface GlossaryTerm { id: string; abbr: string; group: string; }
-interface GlossaryGroup { id: string; terms: GlossaryTerm[]; }
-
-const TERM_GROUPS: GlossaryGroup[] = [
-  { id: 'timeframe', terms: [
-    { id: 'tf_m1', abbr: 'M1',      group: 'timeframe' },
-    { id: 'tf_m5', abbr: 'M5',      group: 'timeframe' },
-    { id: 'tf_h1', abbr: 'H1',      group: 'timeframe' },
-    { id: 'tf_d1', abbr: 'D1',      group: 'timeframe' },
-  ]},
-  { id: 'order', terms: [
-    { id: 'ord_market', abbr: 'MKT', group: 'order' },
-    { id: 'ord_limit',  abbr: 'LMT', group: 'order' },
-    { id: 'ord_stop',   abbr: 'STP', group: 'order' },
-    { id: 'ord_sl',     abbr: 'S/L', group: 'order' },
-  ]},
-  { id: 'cost', terms: [
-    { id: 'cost_spread',      abbr: 'BID/ASK', group: 'cost' },
-    { id: 'cost_commission',  abbr: 'COM',     group: 'cost' },
-    { id: 'cost_slippage',    abbr: 'SLP',     group: 'cost' },
-    { id: 'cost_swap',        abbr: 'SWP',     group: 'cost' },
-  ]},
-  { id: 'risk', terms: [
-    { id: 'risk_sl',  abbr: 'SL',  group: 'risk' },
-    { id: 'risk_tp',  abbr: 'TP',  group: 'risk' },
-    { id: 'risk_rr',  abbr: 'R:R', group: 'risk' },
-    { id: 'risk_dd',  abbr: 'DD',  group: 'risk' },
-    { id: 'risk_pos', abbr: 'LOT', group: 'risk' },
-  ]},
-  { id: 'market', terms: [
-    { id: 'mkt_bull', abbr: 'BULL', group: 'market' },
-    { id: 'mkt_bear', abbr: 'BEAR', group: 'market' },
-    { id: 'mkt_liq',  abbr: 'LIQ',  group: 'market' },
-    { id: 'mkt_vol',  abbr: 'VOL',  group: 'market' },
-    { id: 'mkt_sr',   abbr: 'S/R',  group: 'market' },
-  ]},
 ];
 
 @Component({
@@ -74,10 +37,27 @@ const TERM_GROUPS: GlossaryGroup[] = [
 export class LearnComponent {
   protected lang = inject(LangService);
 
-  protected readonly CATEGORIES  = CATEGORIES;
-  protected readonly TERM_GROUPS = TERM_GROUPS;
-  protected readonly searchQuery = signal('');
-  protected readonly selectedCategory = signal<TradingIndicatorCategory | null>(null);
+  protected readonly CATEGORIES    = CATEGORIES;
+  protected readonly GLOSSARY_GROUPS = GLOSSARY_GROUPS;
+  protected readonly searchQuery         = signal('');
+  protected readonly selectedCategory    = signal<TradingIndicatorCategory | null>(null);
+  protected readonly glossarySearchQuery = signal('');
+
+  protected readonly filteredGlossaryGroups = computed(() => {
+    const q   = this.glossarySearchQuery().toLowerCase().trim();
+    const lng = this.lang.currentLang();
+    if (!q) return GLOSSARY_GROUPS;
+    return GLOSSARY_GROUPS
+      .map(group => ({
+        ...group,
+        terms: group.terms.filter(t =>
+          t.abbr.toLowerCase().includes(q) ||
+          (t.name[lng] || t.name['en']).toLowerCase().includes(q) ||
+          (t.def[lng]  || t.def['en']).toLowerCase().includes(q)
+        ),
+      }))
+      .filter(group => group.terms.length > 0);
+  });
 
   protected readonly filtered = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -102,7 +82,8 @@ export class LearnComponent {
     return this.lang.t(`learn.glossary.group.${groupId}`);
   }
 
-  protected termText(term: GlossaryTerm, field: 'name' | 'def'): string {
-    return this.lang.t(`learn.glossary.term.${term.id}.${field}`);
+  protected termText(term: GlossaryTermData, field: 'name' | 'def'): string {
+    const lang = this.lang.currentLang();
+    return term[field][lang] || term[field]['en'];
   }
 }

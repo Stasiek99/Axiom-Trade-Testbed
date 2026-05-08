@@ -360,7 +360,7 @@ $group-colors: (
 
 .term-badge {
   display: inline-block;
-  flex-shrink: 0;
+  align-self: flex-start;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 0.65rem;

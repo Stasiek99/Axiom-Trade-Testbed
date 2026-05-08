@@ -83,21 +83,35 @@
     <mat-tab [label]="lang.t('learn.tab.glossary')">
       <div class="tab-content glossary-content">
 
-        @for (group of TERM_GROUPS; track group.id) {
-          <div class="term-group">
-            <h2 class="group-label" [attr.data-group]="group.id">{{ groupLabel(group.id) }}</h2>
-            <div class="terms-grid">
-              @for (term of group.terms; track term.id) {
-                <div class="term-card">
-                  <div class="term-header">
-                    <code class="term-abbr" [attr.data-group]="term.group">{{ term.abbr }}</code>
-                    <span class="term-name">{{ termText(term, 'name') }}</span>
+        <!-- Search -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>{{ lang.t('learn.searchPlaceholder') }}</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput (input)="glossarySearchQuery.set($any($event.target).value)" />
+        </mat-form-field>
+
+        @if (filteredGlossaryGroups().length) {
+          @for (group of filteredGlossaryGroups(); track group.id) {
+            <div class="term-group">
+              <h2 class="group-label" [attr.data-group]="group.id">{{ groupLabel(group.id) }}</h2>
+              <div class="terms-grid">
+                @for (term of group.terms; track term.id) {
+                  <div class="term-card">
+                    <div class="term-header">
+                      <code class="term-abbr" [attr.data-group]="term.group">{{ term.abbr }}</code>
+                      <span class="term-name">{{ termText(term, 'name') }}</span>
+                    </div>
                     <span class="term-badge" [attr.data-group]="term.group">{{ groupLabel(term.group) }}</span>
+                    <p class="term-def">{{ termText(term, 'def') }}</p>
                   </div>
-                  <p class="term-def">{{ termText(term, 'def') }}</p>
-                </div>
-              }
+                }
+              </div>
             </div>
+          }
+        } @else {
+          <div class="no-results">
+            <mat-icon>search_off</mat-icon>
+            <span>{{ lang.t('learn.noResults') }}</span>
           </div>
         }
 
