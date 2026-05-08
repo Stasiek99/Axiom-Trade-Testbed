@@ -34,7 +34,7 @@
           <mat-icon matListItemIcon>account_tree</mat-icon>
           <span matListItemTitle>{{ lang.t('nav.strategy') }}</span>
         </a>
-        @if (backtestStore.result()) {
+        @if (backtestStore.result() || backtestStore.history().length > 0) {
           <a mat-list-item routerLink="/statistics" routerLinkActive="active-nav-item">
             <mat-icon matListItemIcon>insights</mat-icon>
             <span matListItemTitle>{{ lang.t('nav.statistics') }}</span>

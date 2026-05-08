@@ -2,22 +2,46 @@
 
   <div class="page-header">
     <h1 class="page-title">{{ lang.t('statistics.title') }}</h1>
+    @if (store.result()) {
+      <div class="page-context">
+        <span class="ctx-symbol">{{ store.symbol() }}</span>
+        <span class="ctx-tf">{{ store.timeframe() }}</span>
+      </div>
+      <button
+        mat-icon-button
+        class="clear-btn"
+        [matTooltip]="lang.t('backtest.reset')"
+        (click)="store.reset()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    }
   </div>
 
-  @if (store.result()) {
-    <app-stats-panel />
-    <app-trade-log />
-    <app-backtest-chart [showViewBtn]="true" />
-  } @else {
-    <div class="empty-state">
-      <mat-icon class="empty-icon">bar_chart</mat-icon>
-      <p class="empty-title">{{ lang.t('statistics.empty') }}</p>
-      <p class="empty-hint">{{ lang.t('statistics.emptyHint') }}</p>
-      <a mat-flat-button routerLink="/strategy" class="go-btn">
-        <mat-icon>account_tree</mat-icon>
-        {{ lang.t('statistics.goToStrategy') }}
-      </a>
+  <div class="statistics-layout">
+
+    <aside class="history-col">
+      <app-history-sidebar />
+    </aside>
+
+    <div class="results-col">
+      @if (store.result()) {
+        <app-stats-panel />
+        <app-trade-log />
+        <app-backtest-chart [showViewBtn]="true" />
+      } @else {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">bar_chart</mat-icon>
+          <p class="empty-title">{{ lang.t('statistics.empty') }}</p>
+          <p class="empty-hint">{{ lang.t('statistics.emptyHint') }}</p>
+          <a mat-flat-button routerLink="/strategy" class="go-btn">
+            <mat-icon>account_tree</mat-icon>
+            {{ lang.t('statistics.goToStrategy') }}
+          </a>
+        </div>
+      }
     </div>
-  }
+
+  </div>
 
 </div>

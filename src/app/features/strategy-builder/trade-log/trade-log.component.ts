@@ -49,15 +49,6 @@ export class TradeLogComponent {
     this.downloadCsv([header, ...rows], 'trade_log.csv');
   }
 
-  protected exportEquityCsv(): void {
-    const result = this.store.result();
-    if (!result) return;
-
-    const header = ['Time', 'Equity ($)'];
-    const rows   = result.equityCurve.map(p => [this.formatTime(p.time), p.value.toFixed(2)]);
-    this.downloadCsv([header, ...rows], 'equity_curve.csv');
-  }
-
   private downloadCsv(rows: (string | number)[][], filename: string): void {
     const csv  = rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });

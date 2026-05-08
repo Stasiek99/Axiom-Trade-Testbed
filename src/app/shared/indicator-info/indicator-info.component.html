@@ -1,76 +1,85 @@
 <div class="indicator-info" [attr.data-cat]="indicator().category" (click)="closeLegend()">
+<div class="content-inner">
+  <div class="layout-grid">
 
-  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
-  <div class="indicator-header">
-    <div class="indicator-title-row">
-      <h2 class="indicator-title">{{ indicator().title }}</h2>
-      <a
-        [href]="learnMoreUrl()"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="learn-more-link"
-        [matTooltip]="lang.t('learn.learnMoreTooltip')"
-        (click)="$event.stopPropagation()"
-      >
-        <mat-icon class="info-icon">open_in_new</mat-icon>
-      </a>
-    </div>
-    <span class="category-badge">{{ indicator().category }}</span>
-  </div>
+    <!-- ── Left column: header + short desc + how it works ─────────────────── -->
+    <div class="col-main">
 
-  <!-- ── Short description ──────────────────────────────────────────────────── -->
-  <p class="short-desc">{{ resolved().shortDescription }}</p>
-
-  <!-- ── Formula ───────────────────────────────────────────────────────────── -->
-  <section class="formula-section">
-    <h3 class="section-label">{{ lang.t('learn.formula') }}</h3>
-    <div
-      class="formula-container"
-      (contextmenu)="onFormulaContextMenu($event)"
-      [innerHTML]="formulaHtml()"
-    ></div>
-    <span class="formula-hint">
-      <mat-icon class="hint-icon">mouse</mat-icon>
-      {{ lang.t('learn.formulaHint') }}
-    </span>
-  </section>
-
-  <!-- ── Full description ───────────────────────────────────────────────────── -->
-  <section class="full-desc-section">
-    <h3 class="section-label">{{ lang.t('learn.howItWorks') }}</h3>
-    <div class="desc-grid">
-      <div class="desc-card">
-        <span class="desc-label">{{ lang.t('learn.assumes') }}</span>
-        <p class="desc-text">{{ resolved().fullDescription.assumptions }}</p>
+      <div class="indicator-header">
+        <div class="indicator-title-row">
+          <h2 class="indicator-title">{{ indicator().title }}</h2>
+          <a
+            [href]="learnMoreUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="learn-more-link"
+            [matTooltip]="lang.t('learn.learnMoreTooltip')"
+            (click)="$event.stopPropagation()"
+          >
+            <mat-icon class="info-icon">open_in_new</mat-icon>
+          </a>
+        </div>
+        <span class="category-badge">{{ indicator().category }}</span>
       </div>
-      <div class="desc-card">
-        <span class="desc-label">{{ lang.t('learn.shows') }}</span>
-        <p class="desc-text">{{ resolved().fullDescription.whatItShows }}</p>
-      </div>
-      <div class="desc-card">
-        <span class="desc-label">{{ lang.t('learn.helpsWith') }}</span>
-        <p class="desc-text">{{ resolved().fullDescription.howItHelps }}</p>
-      </div>
-    </div>
-  </section>
 
-  <!-- ── Parameters ────────────────────────────────────────────────────────── -->
-  @if (indicator().parameters.length) {
-    <section class="params-section">
-      <h3 class="section-label">{{ lang.t('learn.parameters') }}</h3>
-      <div class="param-list">
-        @for (param of indicator().parameters; track param.symbol) {
-          <div class="param-row">
-            <code class="param-symbol">{{ param.symbol }}</code>
-            <span class="param-name">{{ lang.paramLabel(param.name) }}</span>
-            <span class="param-default">{{ lang.t('learn.default') }}: {{ param.defaultValue }}</span>
-            <span class="param-desc">{{ param.description }}</span>
+      <p class="short-desc">{{ resolved().shortDescription }}</p>
+
+      <section class="full-desc-section">
+        <h3 class="section-label">{{ lang.t('learn.howItWorks') }}</h3>
+        <div class="desc-grid">
+          <div class="desc-card">
+            <span class="desc-label">{{ lang.t('learn.assumes') }}</span>
+            <p class="desc-text">{{ resolved().fullDescription.assumptions }}</p>
           </div>
-        }
-      </div>
-    </section>
-  }
+          <div class="desc-card">
+            <span class="desc-label">{{ lang.t('learn.shows') }}</span>
+            <p class="desc-text">{{ resolved().fullDescription.whatItShows }}</p>
+          </div>
+          <div class="desc-card">
+            <span class="desc-label">{{ lang.t('learn.helpsWith') }}</span>
+            <p class="desc-text">{{ resolved().fullDescription.howItHelps }}</p>
+          </div>
+        </div>
+      </section>
 
+    </div>
+
+    <!-- ── Right column: formula + parameters ──────────────────────────────── -->
+    <div class="col-side">
+
+      <section class="formula-section">
+        <h3 class="section-label">{{ lang.t('learn.formula') }}</h3>
+        <div
+          class="formula-container"
+          (contextmenu)="onFormulaContextMenu($event)"
+          [innerHTML]="formulaHtml()"
+        ></div>
+        <span class="formula-hint">
+          <mat-icon class="hint-icon">mouse</mat-icon>
+          {{ lang.t('learn.formulaHint') }}
+        </span>
+      </section>
+
+      @if (indicator().parameters.length) {
+        <section class="params-section">
+          <h3 class="section-label">{{ lang.t('learn.parameters') }}</h3>
+          <div class="param-list">
+            @for (param of indicator().parameters; track param.symbol) {
+              <div class="param-row">
+                <code class="param-symbol">{{ param.symbol }}</code>
+                <span class="param-name">{{ lang.paramLabel(param.name) }}</span>
+                <span class="param-default">{{ lang.t('learn.default') }}: {{ param.defaultValue }}</span>
+                <span class="param-desc">{{ lang.catalogParamDesc(indicator().id, param.symbol, param.description) }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+    </div>
+
+  </div>
+</div>
 </div>
 
 <!-- ── Formula Legend Popover (portal-like, outside .indicator-info) ──────── -->

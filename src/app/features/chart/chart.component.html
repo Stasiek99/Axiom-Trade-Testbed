@@ -8,7 +8,8 @@
         <span class="price" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
           {{ currentPrice() | number:'1.2-2' }}
         </span>
-        <span class="change" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
+        <span class="change" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0"
+          [matTooltip]="lang.t('chart.priceChangeSince') + ' (' + timeframe() + ')'">
           {{ priceChange() >= 0 ? '+' : '' }}{{ priceChange() | number:'1.2-2' }}
         </span>
       </div>

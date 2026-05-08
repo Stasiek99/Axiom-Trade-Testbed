@@ -21,7 +21,7 @@ import { LangService } from '../../../core/services/lang.service';
 import type { StrategyConfig } from '../../../core/strategy/strategy.model';
 
 const SYMBOLS    = ['ETH/USD', 'BTC/USD', 'SOL/USD', 'DOGE/USD'];
-const TIMEFRAMES = ['M15', 'H1', 'H4', 'D1'];
+const TIMEFRAMES = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
 const INITIAL_CAPITAL = 10_000;
 const BASE_BARS       = 500;
 
@@ -67,22 +67,28 @@ export class BacktestRunnerComponent {
   protected readonly SYMBOLS    = SYMBOLS;
   protected readonly TIMEFRAMES = TIMEFRAMES;
 
-  protected symbol    = 'ETH/USD';
-  protected timeframe = 'D1';
+  protected onSymbolChange(value: string): void {
+    this.store.setContext(value, this.store.timeframe());
+  }
+
+  protected onTimeframeChange(value: string): void {
+    this.store.setContext(this.store.symbol(), value);
+  }
 
   private runSub: Subscription | null = null;
 
   protected run(): void {
     if (this.store.isRunning()) return;
 
-    // Snapshot config at start — never read reactively mid-run
-    const strategy = this.strategyStore.config();
-    const limit    = BASE_BARS + maxIndicatorPeriod(strategy);
+    const symbol    = this.store.symbol();
+    const timeframe = this.store.timeframe();
+    const strategy  = this.strategyStore.config();
+    const limit     = BASE_BARS + maxIndicatorPeriod(strategy);
 
     this.store.setRunning();
 
     this.runSub = this.binanceData
-      .getCryptoBars(this.symbol, this.timeframe, limit)
+      .getCryptoBars(symbol, timeframe, limit)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: bars => {
@@ -90,6 +96,7 @@ export class BacktestRunnerComponent {
             const result = this.engine.run(bars, strategy, INITIAL_CAPITAL);
             this.store.setResult(result);
             if (result.totalTrades > 0) {
+              void this.store.saveRun(symbol, timeframe, strategy, result);
               this.router.navigate(['/statistics']);
             }
           } catch {

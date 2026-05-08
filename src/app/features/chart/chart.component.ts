@@ -3,6 +3,7 @@ import { AfterViewInit, Component, DestroyRef, ElementRef, ViewChild, inject, si
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, switchMap, finalize } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { BinanceDataService } from '../../core/services/binance-data.service';
@@ -24,7 +25,7 @@ const INITIAL_CAPITAL = 10_000;
 
 @Component({
   selector: 'app-chart',
-  imports: [CommonModule, MatButtonToggleModule, MatProgressSpinnerModule, SymbolSelectorComponent, BacktestChartComponent],
+  imports: [CommonModule, MatButtonToggleModule, MatProgressSpinnerModule, MatTooltipModule, SymbolSelectorComponent, BacktestChartComponent],
   providers: [ChartService],
   templateUrl: './chart.component.html',
   styleUrl: './chart.component.scss',
@@ -42,8 +43,8 @@ export class ChartComponent implements AfterViewInit {
 
   @ViewChild('chartContainer') chartContainer!: ElementRef<HTMLDivElement>;
 
-  readonly symbol       = signal<string>('ETH/USD');
-  readonly timeframe    = signal<string>('D1');
+  readonly symbol       = signal<string>(this.backtestStore.symbol());
+  readonly timeframe    = signal<string>(this.backtestStore.timeframe());
   readonly currentPrice = signal<number | null>(null);
   readonly priceChange  = signal<number>(0);
   readonly loading      = signal<boolean>(true);
@@ -193,7 +194,8 @@ export class ChartComponent implements AfterViewInit {
           this.currentPrice.set(last.close);
           this.currentBar = null;
           this.lastBarTime = last.time as number;
-          this.priceChange.set(+(last.close - bars[0].open).toFixed(2));
+          const prev = bars.at(-2);
+          this.priceChange.set(prev ? +(last.close - prev.close).toFixed(2) : 0);
         }
         this.loading.set(false);
       });
@@ -237,6 +239,7 @@ export class ChartComponent implements AfterViewInit {
 
   onSymbolChange(sym: string): void {
     this.symbol.set(sym);
+    this.backtestStore.setContext(sym, this.timeframe());
     this.hasConnected     = false;
     this.currentBar       = null;
     this.isFetchingHistory = false;
@@ -248,6 +251,7 @@ export class ChartComponent implements AfterViewInit {
 
   onTimeframeChange(tf: string): void {
     this.timeframe.set(tf);
+    this.backtestStore.setContext(this.symbol(), tf);
     this.hasConnected     = false;
     this.currentBar       = null;
     this.isFetchingHistory = false;
