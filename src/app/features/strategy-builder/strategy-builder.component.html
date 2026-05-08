@@ -2,21 +2,39 @@
 
   <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <div class="builder-header">
-    <div class="header-left">
-      <h1 class="page-title">{{ lang.t('strategy.title') }}</h1>
-    </div>
+    <h1 class="page-title">{{ lang.t('strategy.title') }}</h1>
     <div class="header-right">
       <mat-form-field appearance="outline" class="name-field">
         <mat-label>{{ lang.t('strategy.name') }}</mat-label>
         <input matInput [formControl]="nameCtrl" />
       </mat-form-field>
 
+      <button mat-icon-button
+              class="save-preset-btn"
+              [matTooltip]="lang.t('strategy.savePreset')"
+              (click)="saveCurrentAsPreset()">
+        <mat-icon>bookmark_add</mat-icon>
+      </button>
+
       <button mat-stroked-button [matMenuTriggerFor]="presetsMenu" class="presets-btn">
         <mat-icon>bookmarks</mat-icon>
         {{ lang.t('strategy.presets') }}
         <mat-icon>arrow_drop_down</mat-icon>
       </button>
-      <mat-menu #presetsMenu="matMenu">
+      <mat-menu #presetsMenu="matMenu" class="presets-panel">
+        @if (userPresets().length > 0) {
+          <p class="preset-group-label">My Presets</p>
+          @for (preset of userPresets(); track preset.name) {
+            <button mat-menu-item class="user-preset-item" (click)="loadPreset(preset)">
+              <mat-icon>bookmark</mat-icon>
+              <span class="preset-item-name">{{ preset.name }}</span>
+              <mat-icon class="preset-delete-icon"
+                        (click)="deleteUserPreset(preset.name, $event)">close</mat-icon>
+            </button>
+          }
+          <mat-divider />
+          <p class="preset-group-label">Built-in</p>
+        }
         @for (preset of PRESETS; track preset.name) {
           <button mat-menu-item (click)="loadPreset(preset)">
             <mat-icon>auto_awesome</mat-icon>

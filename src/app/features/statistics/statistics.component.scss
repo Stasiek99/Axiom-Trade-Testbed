@@ -7,38 +7,38 @@
 .statistics-page {
   max-width: 1380px;
   margin: 0 auto;
-  padding: 36px 0 32px;
+  padding: 24px 0 32px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
 .page-header {
-  display:     flex;
+  display: flex;
   align-items: center;
-  gap:         16px;
+  gap: 16px;
 }
 
 .page-context {
-  display:     flex;
+  display: flex;
   align-items: center;
-  gap:         6px;
+  gap: 6px;
 }
 
 .ctx-symbol {
-  font-size:      0.85rem;
-  font-weight:    700;
-  color:          rgba(255, 255, 255, 0.55);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
   letter-spacing: 0.04em;
 }
 
 .ctx-tf {
-  font-size:      0.72rem;
-  font-weight:    600;
-  color:          rgba(255, 255, 255, 0.35);
-  padding:        2px 6px;
-  border:         1px solid rgba(255, 255, 255, 0.12);
-  border-radius:  3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
   letter-spacing: 0.04em;
 }
 
@@ -84,53 +84,56 @@
 // ── Empty state ────────────────────────────────────────────────────────────────
 
 .empty-state {
-  display:         flex;
-  flex-direction:  column;
-  align-items:     center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap:             12px;
-  padding:         64px 24px;
-  border:          1px dashed rgba(255, 255, 255, 0.1);
-  border-radius:   8px;
-  background:      #0f1117;
-  text-align:      center;
+  gap: 12px;
+  padding: 64px 24px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: #0f1117;
+  text-align: center;
 }
 
 .empty-icon {
   font-size: 48px;
-  width:     48px;
-  height:    48px;
-  color:     rgba(255, 255, 255, 0.15);
+  width: 48px;
+  height: 48px;
+  color: rgba(255, 255, 255, 0.15);
 }
 
 .empty-title {
-  margin:      0;
-  font-size:   1rem;
+  margin: 0;
+  font-size: 1rem;
   font-weight: 600;
-  color:       rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .empty-hint {
-  margin:    0;
+  margin: 0;
   font-size: 0.82rem;
-  color:     rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .clear-btn {
   margin-left: auto;
   color: rgba(255, 255, 255, 0.35);
-  &:hover { color: #f87171; }
+
+  &:hover {
+    color: #f87171;
+  }
 }
 
 .go-btn {
-  margin-top:  8px;
-  font-size:   0.82rem;
+  margin-top: 8px;
+  font-size: 0.82rem;
   font-weight: 700;
 
   mat-icon {
     font-size: 16px;
-    width:     16px;
-    height:    16px;
+    width: 16px;
+    height: 16px;
     margin-right: 6px;
   }
 }

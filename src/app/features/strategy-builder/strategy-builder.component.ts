@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+﻿import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -48,7 +48,8 @@ export class StrategyBuilderComponent implements OnInit {
   protected readonly exitRule  = signal<ConditionRule>(this.store.config().exit);
   protected readonly risk      = signal<RiskConfig>(this.store.config().risk);
 
-  protected readonly PRESETS = STRATEGY_PRESETS;
+  protected readonly PRESETS      = STRATEGY_PRESETS;
+  protected readonly userPresets  = this.store.userPresets;
 
   ngOnInit(): void {
     const cfg = this.store.config();
@@ -84,6 +85,16 @@ export class StrategyBuilderComponent implements OnInit {
     }
   }
 
+  protected saveCurrentAsPreset(): void {
+    this.saveToStore();
+    this.store.saveUserPreset();
+  }
+
+  protected deleteUserPreset(name: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.store.deleteUserPreset(name);
+  }
+
   private saveToStore(): void {
     this.store.set({
       name:  this.nameCtrl.value,
@@ -93,3 +104,4 @@ export class StrategyBuilderComponent implements OnInit {
     });
   }
 }
+

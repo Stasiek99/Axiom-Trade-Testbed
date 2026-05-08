@@ -234,7 +234,6 @@ Angular is a frontend framework — there is no true server-side secret. For thi
 - [ ] Multi-asset support (BTC/USD, SOL/USD, etc.) with symbol search
 - [ ] Strategy presets — save/load strategies from `localStorage`
 - [ ] Dark theme refinement (match the terminal aesthetic of the prototype)
-- [ ] Keyboard shortcuts: Space = Run/Pause, R = Reset, S = Save strategy
 - [ ] Responsive layout (side panel collapses on narrow screens)
 - [ ] Proper error states: API down, rate limit hit, WebSocket disconnect + reconnect
 

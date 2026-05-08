@@ -15,6 +15,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'strategy.title':          'Kreator Strategii',
     'strategy.name':           'Nazwa strategii',
     'strategy.presets':        'Presety',
+    'strategy.savePreset':     'Zapisz jako preset',
     'strategy.runBacktest':    'Uruchom Backtest',
     'strategy.backtestPhase4': 'Backtest dostępny w Fazie 4',
 
@@ -258,6 +259,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'strategy.title':          'Strategy Builder',
     'strategy.name':           'Strategy Name',
     'strategy.presets':        'Presets',
+    'strategy.savePreset':     'Save as preset',
     'strategy.runBacktest':    'Run Backtest',
     'strategy.backtestPhase4': 'Backtest coming in Phase 4',
 
