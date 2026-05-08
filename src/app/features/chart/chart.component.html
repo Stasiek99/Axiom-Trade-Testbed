@@ -3,7 +3,7 @@
   <div class="chart-wrapper">
     <div class="chart-header">
       <div class="symbol-info">
-        <app-symbol-selector (symbolChange)="onSymbolChange($event)" />
+        <app-symbol-selector [initialSymbol]="symbol()" (symbolChange)="onSymbolChange($event)" />
         <span class="symbol">{{ symbol() }}</span>
         <span class="price" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
           {{ currentPrice() | number:'1.2-2' }}
@@ -12,6 +12,12 @@
           [matTooltip]="lang.t('chart.priceChangeSince') + ' (' + timeframe() + ')'">
           {{ priceChange() >= 0 ? '+' : '' }}{{ priceChange() | number:'1.2-2' }}
         </span>
+        @if (liveStream() && wsStatus() !== 'live') {
+          <span class="ws-status" [class.reconnecting]="wsStatus() === 'reconnecting'">
+            <span class="ws-dot"></span>
+            {{ lang.t(wsStatus() === 'reconnecting' ? 'chart.ws.reconnecting' : 'chart.ws.connecting') }}
+          </span>
+        }
       </div>
 
       <mat-button-toggle-group
@@ -29,6 +35,17 @@
       @if (loading()) {
         <div class="spinner-overlay">
           <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      }
+
+      @if (apiError(); as err) {
+        <div class="error-overlay">
+          <mat-icon class="error-icon">{{ err === 'rate-limit' ? 'schedule' : 'cloud_off' }}</mat-icon>
+          <p class="error-title">{{ lang.t(err === 'rate-limit' ? 'chart.error.rateLimit' : 'chart.error.apiDown') }}</p>
+          <button mat-flat-button (click)="retryLoad()" class="retry-btn">
+            <mat-icon>refresh</mat-icon>
+            {{ lang.t('chart.error.retry') }}
+          </button>
         </div>
       }
 

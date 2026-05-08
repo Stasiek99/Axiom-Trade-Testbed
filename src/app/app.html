@@ -1,5 +1,8 @@
 <div class="app-shell">
   <mat-toolbar color="primary" class="app-toolbar">
+    <button mat-icon-button class="hamburger-btn" (click)="sidenav.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
     <span class="brand">AXIOM</span>
     <span class="brand-sub">trade testbed</span>
     <span class="toolbar-spacer"></span>
@@ -24,23 +27,30 @@
   </mat-toolbar>
 
   <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav mode="side" opened class="app-sidenav">
+    <mat-sidenav #sidenav
+                 [mode]="isNarrow() ? 'over' : 'side'"
+                 [opened]="!isNarrow()"
+                 class="app-sidenav">
       <mat-nav-list>
-        <a mat-list-item routerLink="/" routerLinkActive="active-nav-item" [routerLinkActiveOptions]="{ exact: true }">
+        <a mat-list-item routerLink="/" routerLinkActive="active-nav-item" [routerLinkActiveOptions]="{ exact: true }"
+           (click)="isNarrow() && sidenav.close()">
           <mat-icon matListItemIcon>bar_chart</mat-icon>
           <span matListItemTitle>{{ lang.t('nav.dashboard') }}</span>
         </a>
-        <a mat-list-item routerLink="/strategy" routerLinkActive="active-nav-item">
+        <a mat-list-item routerLink="/strategy" routerLinkActive="active-nav-item"
+           (click)="isNarrow() && sidenav.close()">
           <mat-icon matListItemIcon>account_tree</mat-icon>
           <span matListItemTitle>{{ lang.t('nav.strategy') }}</span>
         </a>
         @if (backtestStore.result() || backtestStore.history().length > 0) {
-          <a mat-list-item routerLink="/statistics" routerLinkActive="active-nav-item">
+          <a mat-list-item routerLink="/statistics" routerLinkActive="active-nav-item"
+             (click)="isNarrow() && sidenav.close()">
             <mat-icon matListItemIcon>insights</mat-icon>
             <span matListItemTitle>{{ lang.t('nav.statistics') }}</span>
           </a>
         }
-        <a mat-list-item routerLink="/learn" routerLinkActive="active-nav-item">
+        <a mat-list-item routerLink="/learn" routerLinkActive="active-nav-item"
+           (click)="isNarrow() && sidenav.close()">
           <mat-icon matListItemIcon>school</mat-icon>
           <span matListItemTitle>{{ lang.t('nav.learn') }}</span>
         </a>

@@ -245,11 +245,6 @@ export class BacktestChartComponent implements AfterViewInit {
       workChart.timeScale().fitContent();
     }
 
-    // Pane mode: render ▲/▼ markers directly on the candlestick series.
-    if (this.mainChart) {
-      this.mainChart.setTradeMarkers(result.trades);
-    }
-
     // Standalone mode: render drawdown mini-chart below indicator lines.
     if (!this.mainChart) {
       this.renderStandaloneDrawdown(result);

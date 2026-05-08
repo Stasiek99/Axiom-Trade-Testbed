@@ -3,70 +3,121 @@
   <!-- ── Header ─────────────────────────────────────────────────────────────── -->
   <div class="learn-header">
     <h1 class="page-title">{{ lang.t('learn.title') }}</h1>
-
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>{{ lang.t('learn.searchPlaceholder') }}</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput (input)="searchQuery.set($any($event.target).value)" />
-    </mat-form-field>
   </div>
 
-  <!-- ── Category filter ────────────────────────────────────────────────────── -->
-  <div class="category-strip">
-    <button
-      mat-flat-button
-      class="cat-btn"
-      data-cat="all"
-      [class.active]="selectedCategory() === null"
-      (click)="selectedCategory.set(null)"
-    >
-      {{ catLabel(null) }}
-    </button>
-    @for (cat of CATEGORIES; track cat) {
-      <button
-        mat-flat-button
-        class="cat-btn"
-        [attr.data-cat]="cat"
-        [class.active]="selectedCategory() === cat"
-        (click)="selectedCategory.set(cat)"
-      >
-        {{ catLabel(cat) }}
-      </button>
-    }
-  </div>
+  <!-- ── Tab group ──────────────────────────────────────────────────────────── -->
+  <mat-tab-group class="learn-tabs" animationDuration="200ms">
 
-  <!-- ── Results count ──────────────────────────────────────────────────────── -->
-  <p class="results-count">{{ filtered().length }}</p>
+    <!-- ── Tab 1: Indicator Library ─────────────────────────────────────────── -->
+    <mat-tab [label]="lang.t('learn.tab.indicators')">
+      <div class="tab-content">
 
-  <!-- ── Accordion ──────────────────────────────────────────────────────────── -->
-  @if (filtered().length) {
-    <mat-accordion multi class="indicators-accordion">
-      @for (entry of filtered(); track entry.id) {
-        <mat-expansion-panel class="indicator-panel">
+        <!-- Search -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>{{ lang.t('learn.searchPlaceholder') }}</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput (input)="searchQuery.set($any($event.target).value)" />
+        </mat-form-field>
 
-          <mat-expansion-panel-header>
-            <mat-panel-title class="panel-title">
-              <code class="ind-id" [attr.data-cat]="entry.category">{{ entry.id.toUpperCase() }}</code>
-              <span class="ind-full">{{ entry.title }}</span>
-            </mat-panel-title>
-            <mat-panel-description class="panel-desc">
-              <span class="cat-badge" [attr.data-cat]="entry.category">{{ catLabel(entry.category) }}</span>
-            </mat-panel-description>
-          </mat-expansion-panel-header>
+        <!-- Category filter -->
+        <div class="category-strip">
+          <button
+            mat-flat-button
+            class="cat-btn"
+            data-cat="all"
+            [class.active]="selectedCategory() === null"
+            (click)="selectedCategory.set(null)"
+          >
+            {{ catLabel(null) }}
+          </button>
+          @for (cat of CATEGORIES; track cat) {
+            <button
+              mat-flat-button
+              class="cat-btn"
+              [attr.data-cat]="cat"
+              [class.active]="selectedCategory() === cat"
+              (click)="selectedCategory.set(cat)"
+            >
+              {{ catLabel(cat) }}
+            </button>
+          }
+        </div>
 
-          <!-- Lazy — only instantiates when the panel first opens -->
-          <ng-template matExpansionPanelContent>
-            <app-indicator-info [indicator]="entry" class="panel-info" />
-          </ng-template>
+        <!-- Results count -->
+        <p class="results-count">{{ filtered().length }}</p>
 
-        </mat-expansion-panel>
-      }
-    </mat-accordion>
-  } @else {
-    <div class="no-results">
-      <mat-icon>search_off</mat-icon>
-      <span>{{ lang.t('learn.noResults') }}</span>
-    </div>
-  }
+        <!-- Accordion -->
+        @if (filtered().length) {
+          <mat-accordion multi class="indicators-accordion">
+            @for (entry of filtered(); track entry.id) {
+              <mat-expansion-panel class="indicator-panel">
+
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="panel-title">
+                    <code class="ind-id" [attr.data-cat]="entry.category">{{ entry.id.toUpperCase() }}</code>
+                    <span class="ind-full">{{ entry.title }}</span>
+                  </mat-panel-title>
+                  <mat-panel-description class="panel-desc">
+                    <span class="cat-badge" [attr.data-cat]="entry.category">{{ catLabel(entry.category) }}</span>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+
+                <ng-template matExpansionPanelContent>
+                  <app-indicator-info [indicator]="entry" class="panel-info" />
+                </ng-template>
+
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        } @else {
+          <div class="no-results">
+            <mat-icon>search_off</mat-icon>
+            <span>{{ lang.t('learn.noResults') }}</span>
+          </div>
+        }
+
+      </div>
+    </mat-tab>
+
+    <!-- ── Tab 2: Market Terms ───────────────────────────────────────────────── -->
+    <mat-tab [label]="lang.t('learn.tab.glossary')">
+      <div class="tab-content glossary-content">
+
+        <!-- Search -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>{{ lang.t('learn.searchPlaceholder') }}</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput (input)="glossarySearchQuery.set($any($event.target).value)" />
+        </mat-form-field>
+
+        @if (filteredGlossaryGroups().length) {
+          @for (group of filteredGlossaryGroups(); track group.id) {
+            <div class="term-group">
+              <h2 class="group-label" [attr.data-group]="group.id">{{ groupLabel(group.id) }}</h2>
+              <div class="terms-grid">
+                @for (term of group.terms; track term.id) {
+                  <div class="term-card">
+                    <div class="term-header">
+                      <code class="term-abbr" [attr.data-group]="term.group">{{ term.abbr }}</code>
+                      <span class="term-name">{{ termText(term, 'name') }}</span>
+                    </div>
+                    <span class="term-badge" [attr.data-group]="term.group">{{ groupLabel(term.group) }}</span>
+                    <p class="term-def">{{ termText(term, 'def') }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="no-results">
+            <mat-icon>search_off</mat-icon>
+            <span>{{ lang.t('learn.noResults') }}</span>
+          </div>
+        }
+
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
 
 </div>

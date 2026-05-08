@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: block;
   height: 100%;
   overflow-y: auto;
@@ -7,20 +7,25 @@
 .builder-page {
   max-width: 1380px;
   margin: 0 auto;
-  padding: 8px 0 32px;
+  padding: 24px 0 32px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-// ── Header ────────────────────────────────────────────────────────────────
+// â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .builder-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 .page-title {
@@ -34,12 +39,31 @@
 
 .header-right {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .name-field {
   width: 220px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.preset-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-preset-btn {
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
 }
 
 .presets-btn {
@@ -50,7 +74,7 @@
   mat-icon:last-child  { font-size: 18px; width: 18px; height: 18px; margin-left: -2px; opacity: 0.7; }
 }
 
-// ── Rule cards ────────────────────────────────────────────────────────────
+// â”€â”€ Rule cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .rules-row {
   display: grid;
@@ -70,7 +94,7 @@
 .entry-card { border-top: 2px solid rgba(0, 200, 83, 0.5); }
 .exit-card  { border-top: 2px solid rgba(255, 82, 82, 0.5); }
 
-// ── Risk card ─────────────────────────────────────────────────────────────
+// â”€â”€ Risk card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .risk-card {
   background: #0f1117;
@@ -102,7 +126,7 @@
   flex: 0 0 auto;
 }
 
-// ── Actions ───────────────────────────────────────────────────────────────
+// â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .actions-row {
   display: flex;

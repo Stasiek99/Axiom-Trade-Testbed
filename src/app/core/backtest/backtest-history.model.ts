@@ -6,6 +6,8 @@ export interface HistoryRecord {
   runAt: number;
   symbol: string;
   timeframe: string;
+  capital: number;
+  endDate: string | null;
   strategyConfig: StrategyConfig;
   result: BacktestResult;
 }

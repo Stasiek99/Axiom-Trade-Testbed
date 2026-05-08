@@ -14,6 +14,8 @@ export class BacktestStore {
   private readonly _history   = signal<HistoryRecord[]>([]);
   private readonly _symbol    = signal<string>('ETH/USD');
   private readonly _timeframe = signal<string>('D1');
+  private readonly _capital   = signal<number>(10_000);
+  private readonly _endDate   = signal<string | null>(null);
 
   readonly status    = this._status.asReadonly();
   readonly result    = this._result.asReadonly();
@@ -22,17 +24,39 @@ export class BacktestStore {
   readonly history   = this._history.asReadonly();
   readonly symbol    = this._symbol.asReadonly();
   readonly timeframe = this._timeframe.asReadonly();
+  readonly capital   = this._capital.asReadonly();
+  readonly endDate   = this._endDate.asReadonly();
 
   private static readonly SESSION_KEY = 'axiom:backtest';
+  private static readonly PREFS_KEY   = 'axiom:prefs';
 
   constructor() {
     this.historyService.getAllRuns().then(runs => this._history.set(runs));
+    this.restorePrefs();
     this.restoreSession();
     effect(() => sessionStorage.setItem(BacktestStore.SESSION_KEY, JSON.stringify({
       result:    this._result(),
       symbol:    this._symbol(),
       timeframe: this._timeframe(),
     })));
+    effect(() => localStorage.setItem(BacktestStore.PREFS_KEY, JSON.stringify({
+      capital:   this._capital(),
+      endDate:   this._endDate(),
+      symbol:    this._symbol(),
+      timeframe: this._timeframe(),
+    })));
+  }
+
+  private restorePrefs(): void {
+    try {
+      const raw = localStorage.getItem(BacktestStore.PREFS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { capital?: number; endDate?: string | null; symbol?: string; timeframe?: string };
+      if (typeof saved.capital === 'number' && saved.capital > 0) this._capital.set(saved.capital);
+      if (saved.endDate !== undefined) this._endDate.set(saved.endDate);
+      if (saved.symbol)    this._symbol.set(saved.symbol);
+      if (saved.timeframe) this._timeframe.set(saved.timeframe);
+    } catch { /* corrupt — ignore */ }
   }
 
   private restoreSession(): void {
@@ -49,6 +73,14 @@ export class BacktestStore {
   setContext(symbol: string, timeframe: string): void {
     this._symbol.set(symbol);
     this._timeframe.set(timeframe);
+  }
+
+  setCapital(value: number): void {
+    this._capital.set(value);
+  }
+
+  setEndDate(value: string | null): void {
+    this._endDate.set(value);
   }
 
   setRunning(): void {
@@ -70,6 +102,8 @@ export class BacktestStore {
   async saveRun(
     symbol: string,
     timeframe: string,
+    capital: number,
+    endDate: string | null,
     strategyConfig: StrategyConfig,
     result: BacktestResult,
   ): Promise<void> {
@@ -78,6 +112,8 @@ export class BacktestStore {
       runAt: Date.now(),
       symbol,
       timeframe,
+      capital,
+      endDate,
       strategyConfig,
       result,
     };
@@ -98,6 +134,8 @@ export class BacktestStore {
   loadHistoryRun(record: HistoryRecord): void {
     this._symbol.set(record.symbol);
     this._timeframe.set(record.timeframe);
+    if (record.capital) this._capital.set(record.capital);
+    this._endDate.set(record.endDate ?? null);
     this._result.set(record.result);
     this._status.set('done');
     this._progress.set(100);

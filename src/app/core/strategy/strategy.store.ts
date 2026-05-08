@@ -161,25 +161,38 @@ export const STRATEGY_PRESETS: StrategyConfig[] = [
 
 @Injectable({ providedIn: 'root' })
 export class StrategyStore {
-  private static readonly SESSION_KEY = 'axiom:strategy';
+  private static readonly SESSION_KEY  = 'axiom:strategy';
+  private static readonly PRESETS_KEY  = 'axiom:strategy:presets';
 
-  private readonly _config = signal<StrategyConfig>(EMA_CROSS);
-  readonly config = this._config.asReadonly();
+  private readonly _config       = signal<StrategyConfig>(EMA_CROSS);
+  private readonly _userPresets  = signal<StrategyConfig[]>([]);
+
+  readonly config       = this._config.asReadonly();
+  readonly userPresets  = this._userPresets.asReadonly();
 
   constructor() {
-    this.restoreSession();
-    effect(() => sessionStorage.setItem(StrategyStore.SESSION_KEY, JSON.stringify(this._config())));
+    this.restoreConfig();
+    this.restoreUserPresets();
+    effect(() => localStorage.setItem(StrategyStore.SESSION_KEY,  JSON.stringify(this._config())));
+    effect(() => localStorage.setItem(StrategyStore.PRESETS_KEY,  JSON.stringify(this._userPresets())));
   }
 
-  private restoreSession(): void {
+  private restoreConfig(): void {
     try {
-      const raw = sessionStorage.getItem(StrategyStore.SESSION_KEY);
+      const raw = localStorage.getItem(StrategyStore.SESSION_KEY);
       if (raw) this._config.set(JSON.parse(raw) as StrategyConfig);
     } catch { /* corrupt data — ignore */ }
   }
 
+  private restoreUserPresets(): void {
+    try {
+      const raw = localStorage.getItem(StrategyStore.PRESETS_KEY);
+      if (raw) this._userPresets.set(JSON.parse(raw) as StrategyConfig[]);
+    } catch { /* corrupt data — ignore */ }
+  }
+
   reset(): void {
-    sessionStorage.removeItem(StrategyStore.SESSION_KEY);
+    localStorage.removeItem(StrategyStore.SESSION_KEY);
     this._config.set(EMA_CROSS);
   }
 
@@ -189,5 +202,14 @@ export class StrategyStore {
 
   patch(partial: Partial<StrategyConfig>): void {
     this._config.update(c => ({ ...c, ...partial }));
+  }
+
+  saveUserPreset(): void {
+    const config = this._config();
+    this._userPresets.update(ps => [config, ...ps.filter(p => p.name !== config.name)]);
+  }
+
+  deleteUserPreset(name: string): void {
+    this._userPresets.update(ps => ps.filter(p => p.name !== name));
   }
 }

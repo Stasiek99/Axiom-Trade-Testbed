@@ -30,7 +30,14 @@
   background: #1a2234;
   border-bottom: 1px solid #1e2738;
   flex-shrink: 0;
-  gap: 16px;
+  gap: 8px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px 10px;
+  }
 }
 
 .symbol-info {
@@ -41,29 +48,37 @@
 
 .symbol {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.82rem;
   color: #d1d4dc;
   letter-spacing: 0.04em;
 }
 
 .price {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #d1d4dc;
 }
 
 .change {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .up   { color: #26a69a; }
 .down { color: #ef5350; }
 
 .tf-group {
-  --mat-standard-button-toggle-height: 26px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  --mat-standard-button-toggle-height: 22px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+
+  @media (max-width: 600px) {
+    width: 100%;
+
+    .mat-button-toggle {
+      flex: 1;
+    }
+  }
 }
 
 .chart-canvas {
@@ -80,6 +95,78 @@
   justify-content: center;
   background: rgba(19, 23, 34, 0.75);
   z-index: 10;
+}
+
+.error-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(19, 23, 34, 0.9);
+  z-index: 10;
+
+  .error-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: #ef5350;
+  }
+
+  .error-title {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .retry-btn {
+    margin-top: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+  }
+}
+
+// ── WebSocket status pill ─────────────────────────────────────────────────────
+
+.ws-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.02em;
+
+  .ws-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    animation: ws-pulse 1.4s ease-in-out infinite;
+  }
+
+  &.reconnecting {
+    color: #f59e0b;
+
+    .ws-dot {
+      background: #f59e0b;
+    }
+  }
+}
+
+@keyframes ws-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
 }
 
 .crosshair-tooltip {

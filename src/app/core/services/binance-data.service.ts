@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, map, catchError, EMPTY } from 'rxjs';
+import { Observable, of, map, catchError, throwError } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { Bar } from '../models/bar.model';
 
@@ -105,7 +105,7 @@ export class BinanceDataService {
       }),
       catchError(error => {
         console.error('[BinanceDataService] Error fetching crypto bars', error);
-        return EMPTY;
+        return throwError(() => error);
       })
     );
   }
@@ -130,7 +130,7 @@ export class BinanceDataService {
       map(klines => this.mapKlines(klines)),
       catchError(error => {
         console.error('[BinanceDataService] Error fetching historical bars', error);
-        return EMPTY;
+        return throwError(() => error);
       })
     );
   }
@@ -155,7 +155,7 @@ export class BinanceDataService {
       map(klines => this.mapKlines(klines)),
       catchError(error => {
         console.error('[BinanceDataService] Error fetching gap bars', error);
-        return EMPTY;
+        return throwError(() => error);
       })
     );
   }

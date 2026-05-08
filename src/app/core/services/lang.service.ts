@@ -8,11 +8,19 @@ import { PARAM_CATALOG_PL } from '../i18n/param-catalog-pl.i18n';
 
 @Injectable({ providedIn: 'root' })
 export class LangService {
-  private readonly _lang = signal<Lang>('pl');
+  private static readonly LANG_KEY = 'axiom:lang';
+
+  private readonly _lang = signal<Lang>(LangService.loadLang());
   readonly currentLang = this._lang.asReadonly();
+
+  private static loadLang(): Lang {
+    const saved = localStorage.getItem(LangService.LANG_KEY);
+    return saved === 'en' || saved === 'pl' ? saved : 'pl';
+  }
 
   setLang(lang: Lang): void {
     this._lang.set(lang);
+    localStorage.setItem(LangService.LANG_KEY, lang);
   }
 
   t(key: string): string {

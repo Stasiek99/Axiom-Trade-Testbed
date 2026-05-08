@@ -18,10 +18,13 @@
 }
 
 .ctrl-field {
-  width: 140px;
+  width: 160px;
   flex-shrink: 0;
 
   .mat-mdc-form-field-subscript-wrapper { display: none; }
+
+  &--capital { width: 130px; }
+  &--date    { width: 180px; }
 }
 
 .btn-group {

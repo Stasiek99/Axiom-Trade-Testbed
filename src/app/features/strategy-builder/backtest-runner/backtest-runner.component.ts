@@ -14,13 +14,14 @@ import { Subscription } from 'rxjs';
 import '../../../core/indicators';
 
 import { BinanceDataService } from '../../../core/services/binance-data.service';
+import { AlpacaDataService } from '../../../core/services/alpaca-data.service';
 import { StrategyStore } from '../../../core/strategy/strategy.store';
 import { BacktestEngineService } from '../../../core/backtest/backtest-engine.service';
 import { BacktestStore } from '../../../core/backtest/backtest.store';
 import { LangService } from '../../../core/services/lang.service';
+import { SYMBOL_GROUPS, ALPACA_SYMBOLS } from '../../chart/symbol-selector/symbol-selector.component';
 import type { StrategyConfig } from '../../../core/strategy/strategy.model';
 
-const SYMBOLS    = ['ETH/USD', 'BTC/USD', 'SOL/USD', 'DOGE/USD'];
 const TIMEFRAMES = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
 const INITIAL_CAPITAL = 10_000;
 const BASE_BARS       = 500;
@@ -56,6 +57,7 @@ function maxIndicatorPeriod(cfg: StrategyConfig): number {
 })
 export class BacktestRunnerComponent {
   private readonly binanceData   = inject(BinanceDataService);
+  private readonly alpacaData    = inject(AlpacaDataService);
   private readonly strategyStore = inject(StrategyStore);
   private readonly engine        = inject(BacktestEngineService);
   private readonly destroyRef    = inject(DestroyRef);
@@ -64,8 +66,8 @@ export class BacktestRunnerComponent {
   protected readonly store   = inject(BacktestStore);
   protected readonly lang    = inject(LangService);
 
-  protected readonly SYMBOLS    = SYMBOLS;
-  protected readonly TIMEFRAMES = TIMEFRAMES;
+  protected readonly SYMBOL_GROUPS = SYMBOL_GROUPS;
+  protected readonly TIMEFRAMES    = TIMEFRAMES;
 
   protected onSymbolChange(value: string): void {
     this.store.setContext(value, this.store.timeframe());
@@ -87,8 +89,11 @@ export class BacktestRunnerComponent {
 
     this.store.setRunning();
 
-    this.runSub = this.binanceData
-      .getCryptoBars(symbol, timeframe, limit)
+    const bars$ = ALPACA_SYMBOLS.has(symbol)
+      ? this.alpacaData.getStockBars(symbol, timeframe, limit)
+      : this.binanceData.getCryptoBars(symbol, timeframe, limit);
+
+    this.runSub = bars$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: bars => {
@@ -96,7 +101,7 @@ export class BacktestRunnerComponent {
             const result = this.engine.run(bars, strategy, INITIAL_CAPITAL);
             this.store.setResult(result);
             if (result.totalTrades > 0) {
-              void this.store.saveRun(symbol, timeframe, strategy, result);
+              void this.store.saveRun(symbol, timeframe, this.store.capital(), this.store.endDate(), strategy, result);
               this.router.navigate(['/statistics']);
             }
           } catch {

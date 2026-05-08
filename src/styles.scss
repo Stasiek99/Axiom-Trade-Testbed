@@ -66,3 +66,79 @@ body {
     margin-left: 12px;
   }
 }
+
+.mat-drawer-backdrop.mat-drawer-shown {
+  background-color: rgba(0, 0, 0, 0.78) !important;
+}
+
+.symbol-menu-panel {
+  min-width: 160px !important;
+
+  .sym-group-label {
+    padding: 6px 16px 2px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+    pointer-events: none;
+  }
+
+  .sym-item .mat-mdc-menu-item-text {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  .sym-check {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+    color: #22d3ee;
+    flex-shrink: 0;
+  }
+}
+
+.presets-panel {
+  min-width: 220px !important;
+
+  .preset-group-label {
+    margin: 0;
+    padding: 4px 16px 2px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.4;
+  }
+
+  .user-preset-item .mat-mdc-menu-item-text {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+
+    .preset-item-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preset-delete-icon {
+      font-size: 14px !important;
+      width: 14px !important;
+      height: 14px !important;
+      opacity: 0.35;
+      flex-shrink: 0;
+      transition: opacity 0.15s, color 0.15s;
+
+      &:hover {
+        opacity: 1;
+        color: #ff5252;
+      }
+    }
+  }
+}

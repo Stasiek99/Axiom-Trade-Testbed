@@ -1,7 +1,16 @@
-<mat-form-field appearance="outline" subscriptSizing="dynamic" class="symbol-field">
-  <mat-select [(ngModel)]="selected" (ngModelChange)="onSelect($event)">
-    @for (s of symbols; track s) {
-      <mat-option [value]="s">{{ s }}</mat-option>
+<button mat-button class="symbol-btn" [matMenuTriggerFor]="symbolMenu">
+  <span class="sym-label">{{ selected }}</span>
+  <mat-icon class="sym-chevron">arrow_drop_down</mat-icon>
+</button>
+
+<mat-menu #symbolMenu="matMenu" class="symbol-menu-panel">
+  @for (group of groups; track group.labelKey) {
+    <div class="sym-group-label">{{ lang.t(group.labelKey) }}</div>
+    @for (s of group.symbols; track s) {
+      <button mat-menu-item class="sym-item" (click)="onSelect(s)">
+        <mat-icon class="sym-check" [style.visibility]="selected === s ? 'visible' : 'hidden'">check</mat-icon>
+        {{ s }}
+      </button>
     }
-  </mat-select>
-</mat-form-field>
+  }
+</mat-menu>
