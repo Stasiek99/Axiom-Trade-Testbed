@@ -1,7 +1,11 @@
 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="symbol-field">
   <mat-select [(ngModel)]="selected" (ngModelChange)="onSelect($event)">
-    @for (s of symbols; track s) {
-      <mat-option [value]="s">{{ s }}</mat-option>
+    @for (group of groups; track group.labelKey) {
+      <mat-optgroup [label]="lang.t(group.labelKey)">
+        @for (s of group.symbols; track s) {
+          <mat-option [value]="s">{{ s }}</mat-option>
+        }
+      </mat-optgroup>
     }
   </mat-select>
 </mat-form-field>

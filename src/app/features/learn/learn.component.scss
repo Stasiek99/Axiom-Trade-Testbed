@@ -9,12 +9,7 @@
 // ── Header ─────────────────────────────────────────────────────────────────
 
 .learn-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .page-title {
@@ -25,13 +20,6 @@
   text-transform: uppercase;
   opacity: 0.85;
   color: #e6edf3;
-}
-
-.search-field {
-  width: 280px;
-  flex-shrink: 0;
-
-  .mat-mdc-form-field-subscript-wrapper { display: none; }
 }
 
 // ── Category color palette ──────────────────────────────────────────────────
@@ -46,6 +34,68 @@ $cat-colors: (
   'Channels & Bands': #f472b6,
   'Volume':           #2dd4bf,
 );
+
+// ── Group color palette ─────────────────────────────────────────────────────
+
+$group-colors: (
+  'timeframe': #22d3ee,
+  'cost':      #fb923c,
+  'order':     #34d399,
+  'risk':      #f472b6,
+  'market':    #818cf8,
+);
+
+// ── Tab group ───────────────────────────────────────────────────────────────
+
+::ng-deep .learn-tabs {
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid #21262d;
+    background: transparent;
+  }
+
+  .mat-mdc-tab .mdc-tab__text-label {
+    color: #6e7681;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
+    color: #e6edf3;
+  }
+
+  .mdc-tab-indicator__content--underline {
+    border-color: #a78bfa;
+  }
+
+  .mat-mdc-tab-body-wrapper {
+    flex: 1;
+  }
+
+  .mat-mdc-tab-body-content {
+    overflow: visible;
+  }
+}
+
+// ── Tab content wrapper ─────────────────────────────────────────────────────
+
+.tab-content {
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Search field ────────────────────────────────────────────────────────────
+
+.search-field {
+  width: 280px;
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-bottom: 4px;
+
+  .mat-mdc-form-field-subscript-wrapper { display: none; }
+}
 
 // ── Category filter strip ───────────────────────────────────────────────────
 
@@ -211,19 +261,149 @@ $cat-colors: (
   }
 }
 
+// ── Glossary ────────────────────────────────────────────────────────────────
+
+.glossary-content {
+  gap: 0;
+}
+
+.term-group {
+  margin-bottom: 28px;
+}
+
+.group-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #484f58;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 13px;
+    border-radius: 2px;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+}
+
+@each $group, $color in $group-colors {
+  .group-label[data-group="#{$group}"] {
+    color: rgba($color, 0.65);
+  }
+}
+
+.terms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 8px;
+}
+
+.term-card {
+  background: #0f1117;
+  border: 1px solid #1e2030;
+  border-radius: 6px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.15s;
+}
+
+@each $group, $color in $group-colors {
+  .term-card:has(.term-abbr[data-group="#{$group}"]):hover {
+    border-color: rgba($color, 0.22);
+  }
+}
+
+.term-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.term-abbr {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6e7681;
+  background: rgba(110, 118, 129, 0.08);
+  border: 1px solid rgba(110, 118, 129, 0.18);
+  border-radius: 4px;
+  padding: 1px 7px;
+  letter-spacing: 0.04em;
+  min-width: 44px;
+  text-align: center;
+}
+
+@each $group, $color in $group-colors {
+  .term-abbr[data-group="#{$group}"] {
+    color: $color;
+    background: rgba($color, 0.08);
+    border-color: rgba($color, 0.2);
+  }
+}
+
+.term-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #d4d8e0;
+  flex: 1;
+  min-width: 0;
+}
+
+.term-badge {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: #1e2030;
+  color: #8b949e;
+  border: 1px solid #21262d;
+}
+
+@each $group, $color in $group-colors {
+  .term-badge[data-group="#{$group}"] {
+    background: rgba($color, 0.08);
+    color: $color;
+    border-color: rgba($color, 0.22);
+  }
+}
+
+.term-def {
+  font-size: 0.83rem;
+  line-height: 1.58;
+  color: #8b949e;
+  margin: 0;
+}
+
 // ── Responsive ─────────────────────────────────────────────────────────────
 
 @media (max-width: 680px) {
-  .learn-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .search-field {
     width: 100%;
+    align-self: auto;
   }
 
   .panel-desc {
+    display: none;
+  }
+
+  .terms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .term-badge {
     display: none;
   }
 }

@@ -3,7 +3,7 @@
   <div class="chart-wrapper">
     <div class="chart-header">
       <div class="symbol-info">
-        <app-symbol-selector (symbolChange)="onSymbolChange($event)" />
+        <app-symbol-selector [initialSymbol]="symbol()" (symbolChange)="onSymbolChange($event)" />
         <span class="symbol">{{ symbol() }}</span>
         <span class="price" [class.up]="priceChange() >= 0" [class.down]="priceChange() < 0">
           {{ currentPrice() | number:'1.2-2' }}

@@ -4,10 +4,11 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject, switchMap, finalize } from 'rxjs';
+import { Subject, switchMap, finalize, EMPTY } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { BinanceDataService } from '../../core/services/binance-data.service';
 import { BinanceWsService, WsEvent } from '../../core/services/binance-ws.service';
+import { AlpacaDataService } from '../../core/services/alpaca-data.service';
 import { ChartService, CrosshairData } from '../../core/services/chart.service';
 import { LangService } from '../../core/services/lang.service';
 import { Bar } from '../../core/models/bar.model';
@@ -16,7 +17,7 @@ import { BacktestEngineService } from '../../core/backtest/backtest-engine.servi
 import type { IndicatorSeries } from '../../core/backtest/backtest.model';
 import { StrategyStore } from '../../core/strategy/strategy.store';
 import { BacktestChartComponent } from '../strategy-builder/backtest-chart/backtest-chart.component';
-import { SymbolSelectorComponent } from './symbol-selector/symbol-selector.component';
+import { SymbolSelectorComponent, ALPACA_SYMBOLS } from './symbol-selector/symbol-selector.component';
 
 const TIMEFRAME_SECONDS: Record<string, number> = {
   M1: 60, M5: 300, M15: 900, H1: 3600, H4: 14400, D1: 86400,
@@ -31,10 +32,11 @@ const INITIAL_CAPITAL = 10_000;
   styleUrl: './chart.component.scss',
 })
 export class ChartComponent implements AfterViewInit {
-  private readonly binanceDataService = inject(BinanceDataService);
-  private readonly binanceWs          = inject(BinanceWsService);
-  private readonly chartService       = inject(ChartService);
-  private readonly destroyRef         = inject(DestroyRef);
+  private readonly binanceData  = inject(BinanceDataService);
+  private readonly alpacaData   = inject(AlpacaDataService);
+  private readonly binanceWs    = inject(BinanceWsService);
+  private readonly chartService = inject(ChartService);
+  private readonly destroyRef   = inject(DestroyRef);
 
   protected readonly backtestStore = inject(BacktestStore);
   protected readonly lang          = inject(LangService);
@@ -61,8 +63,11 @@ export class ChartComponent implements AfterViewInit {
   private historyExhausted  = false;
   private readonly stream$ = new Subject<{ symbol: string; timeframe: string }>();
 
-  // Convert BacktestStore result signal to Observable for use in ngAfterViewInit
   private readonly backtestResult$ = toObservable(this.backtestStore.result);
+
+  private isAlpaca(sym: string): boolean {
+    return ALPACA_SYMBOLS.has(sym);
+  }
 
   ngAfterViewInit(): void {
     const container = this.chartContainer.nativeElement;
@@ -73,7 +78,6 @@ export class ChartComponent implements AfterViewInit {
       if (range.from < 10) this.loadHistoricalBars();
     });
 
-    // All indicators go to pane 1 via BacktestChartComponent — price chart stays clean.
     this.backtestResult$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.chartService.clearIndicatorSeries();
     });
@@ -82,9 +86,11 @@ export class ChartComponent implements AfterViewInit {
       this.crosshair.set(data);
     });
 
-    // switchMap auto-unsubscribes old stream when stream$ emits a new value
+    // Live WebSocket stream — skipped for Alpaca symbols (REST-only).
     this.stream$.pipe(
-      switchMap(({ symbol, timeframe }) => this.binanceWs.streamBars(symbol, timeframe)),
+      switchMap(({ symbol, timeframe }) =>
+        this.isAlpaca(symbol) ? EMPTY : this.binanceWs.streamBars(symbol, timeframe),
+      ),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((event: WsEvent) => {
       if (event.type === 'connected') {
@@ -96,7 +102,7 @@ export class ChartComponent implements AfterViewInit {
         this.chartService.updateBar(event.bar);
         this.currentPrice.set(event.bar.close);
         this.lastBarTime = event.bar.time as number;
-        this.currentBar = null; // trades after this belong to the next bar period
+        this.currentBar = null;
         return;
       }
       if (event.type === 'trade' && event.price != null) {
@@ -112,7 +118,6 @@ export class ChartComponent implements AfterViewInit {
     });
     this.resizeObserver.observe(container);
 
-    // unsubCrosshair/unsubRange must run before chartService.destroy()
     this.destroyRef.onDestroy(() => {
       this.resizeObserver?.disconnect();
       unsubCrosshair();
@@ -125,7 +130,7 @@ export class ChartComponent implements AfterViewInit {
   }
 
   private applyTrade(price: number, tradeTime?: number): void {
-    this.currentPrice.set(price); // always update displayed price immediately
+    this.currentPrice.set(price);
 
     const intervalSec = TIMEFRAME_SECONDS[this.timeframe()] ?? 3600;
     const barTime = tradeTime && !isNaN(tradeTime)
@@ -141,7 +146,7 @@ export class ChartComponent implements AfterViewInit {
         ...this.currentBar,
         close: price,
         high: Math.max(this.currentBar.high, price),
-        low: Math.min(this.currentBar.low, price),
+        low:  Math.min(this.currentBar.low,  price),
       };
     }
     this.chartService.updateBar(this.currentBar);
@@ -151,54 +156,54 @@ export class ChartComponent implements AfterViewInit {
     const oldestTime = this.chartService.getOldestBarTime();
     if (!oldestTime) return;
     this.isFetchingHistory = true;
-    // Track whether next() fired — if the service returns EMPTY (network error),
-    // next() is never called and isFetchingHistory would stick at true without finalize.
     let barsReceived = false;
-    this.binanceDataService.getCryptoBarsEndingAt(this.symbol(), this.timeframe(), oldestTime)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => {
-          this.isFetchingHistory = false;
-          // Re-check after a successful fetch: a single zoom-out can push range.from
-          // far below 10 in one step; the range event fired inside prependBars is
-          // suppressed while isFetchingHistory is true, so we recurse here instead.
-          if (barsReceived && !this.historyExhausted) {
-            const range = this.chartService.getVisibleLogicalRange();
-            if (range && range.from < 10) this.loadHistoricalBars();
-          }
-        }),
-      )
-      .subscribe((bars: Bar[]) => {
-        barsReceived = true;
-        if (bars.length === 0) {
-          this.historyExhausted = true;
-        } else {
-          this.chartService.prependBars(bars);
-          this.refreshBacktestIndicators();
+
+    const obs$ = this.isAlpaca(this.symbol())
+      ? this.alpacaData.getStockBarsEndingAt(this.symbol(), this.timeframe(), oldestTime)
+      : this.binanceData.getCryptoBarsEndingAt(this.symbol(), this.timeframe(), oldestTime);
+
+    obs$.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => {
+        this.isFetchingHistory = false;
+        if (barsReceived && !this.historyExhausted) {
+          const range = this.chartService.getVisibleLogicalRange();
+          if (range && range.from < 10) this.loadHistoricalBars();
         }
-      });
+      }),
+    ).subscribe((bars: Bar[]) => {
+      barsReceived = true;
+      if (bars.length === 0) {
+        this.historyExhausted = true;
+      } else {
+        this.chartService.prependBars(bars);
+        this.refreshBacktestIndicators();
+      }
+    });
   }
 
   private loadBars(): void {
     this.loading.set(true);
     const gen = ++this.loadGeneration;
 
-    this.binanceDataService.getCryptoBars(this.symbol(), this.timeframe())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((bars: Bar[]) => {
-        if (gen !== this.loadGeneration) return; // discard stale response
-        if (bars.length > 0) {
-          this.chartService.setData(bars);
-          this.chartService.fitContent();
-          const last = bars.at(-1)!;
-          this.currentPrice.set(last.close);
-          this.currentBar = null;
-          this.lastBarTime = last.time as number;
-          const prev = bars.at(-2);
-          this.priceChange.set(prev ? +(last.close - prev.close).toFixed(2) : 0);
-        }
-        this.loading.set(false);
-      });
+    const obs$ = this.isAlpaca(this.symbol())
+      ? this.alpacaData.getStockBars(this.symbol(), this.timeframe())
+      : this.binanceData.getCryptoBars(this.symbol(), this.timeframe());
+
+    obs$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((bars: Bar[]) => {
+      if (gen !== this.loadGeneration) return;
+      if (bars.length > 0) {
+        this.chartService.setData(bars);
+        this.chartService.fitContent();
+        const last = bars.at(-1)!;
+        this.currentPrice.set(last.close);
+        this.currentBar  = null;
+        this.lastBarTime = last.time as number;
+        const prev = bars.at(-2);
+        this.priceChange.set(prev ? +(last.close - prev.close).toFixed(2) : 0);
+      }
+      this.loading.set(false);
+    });
   }
 
   private refreshBacktestIndicators(): void {
@@ -217,7 +222,7 @@ export class ChartComponent implements AfterViewInit {
     if (!this.lastBarTime) return;
     const start = new Date((this.lastBarTime + 1) * 1000).toISOString();
 
-    this.binanceDataService.getCryptoBarsFrom(this.symbol(), this.timeframe(), start)
+    this.binanceData.getCryptoBarsFrom(this.symbol(), this.timeframe(), start)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((bars: Bar[]) => {
         for (const bar of bars) {
@@ -240,8 +245,8 @@ export class ChartComponent implements AfterViewInit {
   onSymbolChange(sym: string): void {
     this.symbol.set(sym);
     this.backtestStore.setContext(sym, this.timeframe());
-    this.hasConnected     = false;
-    this.currentBar       = null;
+    this.hasConnected      = false;
+    this.currentBar        = null;
     this.isFetchingHistory = false;
     this.historyExhausted  = false;
     this.chartService.setData([]);
@@ -252,8 +257,8 @@ export class ChartComponent implements AfterViewInit {
   onTimeframeChange(tf: string): void {
     this.timeframe.set(tf);
     this.backtestStore.setContext(this.symbol(), tf);
-    this.hasConnected     = false;
-    this.currentBar       = null;
+    this.hasConnected      = false;
+    this.currentBar        = null;
     this.isFetchingHistory = false;
     this.historyExhausted  = false;
     this.loadBars();

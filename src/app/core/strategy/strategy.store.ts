@@ -167,19 +167,19 @@ export class StrategyStore {
   readonly config = this._config.asReadonly();
 
   constructor() {
-    this.restoreSession();
-    effect(() => sessionStorage.setItem(StrategyStore.SESSION_KEY, JSON.stringify(this._config())));
+    this.restoreConfig();
+    effect(() => localStorage.setItem(StrategyStore.SESSION_KEY, JSON.stringify(this._config())));
   }
 
-  private restoreSession(): void {
+  private restoreConfig(): void {
     try {
-      const raw = sessionStorage.getItem(StrategyStore.SESSION_KEY);
+      const raw = localStorage.getItem(StrategyStore.SESSION_KEY);
       if (raw) this._config.set(JSON.parse(raw) as StrategyConfig);
     } catch { /* corrupt data — ignore */ }
   }
 
   reset(): void {
-    sessionStorage.removeItem(StrategyStore.SESSION_KEY);
+    localStorage.removeItem(StrategyStore.SESSION_KEY);
     this._config.set(EMA_CROSS);
   }
 
