@@ -7,6 +7,8 @@
 ![Lightweight Charts](https://img.shields.io/badge/Lightweight%20Charts-v5-2962ff)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+**[Live Demo](https://axiom-trade-testbed.netlify.app/)**
+
 [🇬🇧 English](README.md) | 🇵🇱 Polski
 
 ---
