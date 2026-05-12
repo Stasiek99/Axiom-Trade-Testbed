@@ -9,13 +9,14 @@ import { MatMenuModule } from '@angular/material/menu';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
+import { WaveBackgroundComponent } from './shared/wave-background/wave-background.component';
 import { LangService } from './core/services/lang.service';
 import { BacktestStore } from './core/backtest/backtest.store';
 import type { Lang } from './core/i18n/translations';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatSidenavModule, MatListModule, MatIconModule, MatButtonModule, MatMenuModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatSidenavModule, MatListModule, MatIconModule, MatButtonModule, MatMenuModule, WaveBackgroundComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

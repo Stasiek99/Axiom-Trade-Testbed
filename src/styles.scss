@@ -25,6 +25,21 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+// Let the wave canvas show through Material containers
+.mat-drawer-container {
+  background-color: transparent !important;
+}
+
+.mat-drawer {
+  background-color: rgba(10, 10, 18, 0.75) !important;
+  backdrop-filter: blur(12px);
+}
+
+.mat-toolbar {
+  background: rgba(10, 10, 18, 0.72) !important;
+  backdrop-filter: blur(12px);
+}
+
 * {
   box-sizing: border-box;
 }

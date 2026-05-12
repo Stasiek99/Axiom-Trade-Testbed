@@ -113,9 +113,10 @@
   justify-content: center;
   gap: 12px;
   padding: 64px 24px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
-  background: #0f1117;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
   text-align: center;
 
   @media (max-width: 768px) {
