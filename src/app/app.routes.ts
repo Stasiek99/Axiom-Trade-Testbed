@@ -1,8 +1,11 @@
 import { Routes } from '@angular/router';
-import { ChartComponent } from './features/chart/chart.component';
 
 export const routes: Routes = [
-  { path: '', component: ChartComponent },
+  {
+    path: '',
+    loadComponent: () =>
+      import('./features/chart/chart.component').then(m => m.ChartComponent),
+  },
   {
     path: 'strategy',
     data: { preload: true },

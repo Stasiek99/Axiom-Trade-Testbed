@@ -92,7 +92,7 @@ export class ChartComponent implements AfterViewInit {
 
     this.stream$.pipe(
       switchMap(({ symbol, timeframe }) =>
-        this.isAlpaca(symbol) ? EMPTY : timer(15000).pipe(switchMap(() => this.binanceWs.streamBars(symbol, timeframe))),
+        !symbol || this.isAlpaca(symbol) ? EMPTY : timer(15000).pipe(switchMap(() => this.binanceWs.streamBars(symbol, timeframe))),
       ),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((event: WsEvent) => {
@@ -118,6 +118,15 @@ export class ChartComponent implements AfterViewInit {
       }
     });
 
+    // Close the WebSocket on pagehide so the browser can use bfcache.
+    // We re-trigger the stream on pageshow if the page was restored from cache.
+    const onPageHide = () => this.stream$.next({ symbol: '', timeframe: '' });
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) this.stream$.next({ symbol: this.symbol(), timeframe: this.timeframe() });
+    };
+    window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('pageshow', onPageShow as EventListener);
+
     this.destroyRef.onDestroy(() => {
       if (this.rafId !== null) cancelAnimationFrame(this.rafId);
       if (this.throttleTimer !== null) clearTimeout(this.throttleTimer);
@@ -125,6 +134,8 @@ export class ChartComponent implements AfterViewInit {
       this.unsubCrosshair?.();
       this.unsubRange?.();
       this.chartService.destroy();
+      window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('pageshow', onPageShow as EventListener);
     });
 
     setTimeout(() => {
