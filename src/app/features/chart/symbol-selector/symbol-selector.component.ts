@@ -28,6 +28,7 @@ export const ALPACA_SYMBOLS = new Set(
 
 @Component({
   selector: 'app-symbol-selector',
+  standalone: true,
   imports: [MatButtonModule, MatMenuModule, MatIconModule],
   templateUrl: './symbol-selector.component.html',
   styleUrl: './symbol-selector.component.scss',

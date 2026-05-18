@@ -1,4 +1,6 @@
-<app-wave-background />
+@defer (on idle) {
+  <app-wave-background />
+}
 <div class="app-shell">
   <mat-toolbar color="primary" class="app-toolbar">
     <button mat-icon-button class="hamburger-btn" (click)="sidenav.toggle()">

@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject, switchMap, finalize, EMPTY, catchError } from 'rxjs';
+import { Subject, switchMap, finalize, EMPTY, catchError, timer } from 'rxjs';
 import { type UTCTimestamp } from 'lightweight-charts';
 import { BinanceDataService } from '../../core/services/binance-data.service';
 import { BinanceWsService, WsEvent } from '../../core/services/binance-ws.service';
@@ -15,7 +15,7 @@ import { ChartService, CrosshairData } from '../../core/services/chart.service';
 import { LangService } from '../../core/services/lang.service';
 import { Bar } from '../../core/models/bar.model';
 import { BacktestStore } from '../../core/backtest/backtest.store';
-import { BacktestEngineService } from '../../core/backtest/backtest-engine.service';
+import type { BacktestEngineService } from '../../core/backtest/backtest-engine.service';
 import type { IndicatorSeries } from '../../core/backtest/backtest.model';
 import { StrategyStore } from '../../core/strategy/strategy.store';
 import { BacktestChartComponent } from '../strategy-builder/backtest-chart/backtest-chart.component';
@@ -28,10 +28,12 @@ const INITIAL_CAPITAL = 10_000;
 
 @Component({
   selector: 'app-chart',
+  standalone: true,
   imports: [CommonModule, MatButtonModule, MatButtonToggleModule, MatIconModule, MatProgressSpinnerModule, MatTooltipModule, SymbolSelectorComponent, BacktestChartComponent],
   providers: [ChartService],
   templateUrl: './chart.component.html',
   styleUrl: './chart.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChartComponent implements AfterViewInit {
   private readonly binanceData  = inject(BinanceDataService);
@@ -43,7 +45,7 @@ export class ChartComponent implements AfterViewInit {
   protected readonly backtestStore = inject(BacktestStore);
   protected readonly lang          = inject(LangService);
   private  readonly strategyStore  = inject(StrategyStore);
-  private  readonly engine         = inject(BacktestEngineService);
+  private  _engine?: BacktestEngineService;
 
   @ViewChild('chartContainer') chartContainer!: ElementRef<HTMLDivElement>;
 
@@ -60,12 +62,19 @@ export class ChartComponent implements AfterViewInit {
   readonly timeframes = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
 
   private resizeObserver:   ResizeObserver | null = null;
+  private unsubRange?:      () => void;
+  private unsubCrosshair?:  () => void;
   private currentBar:       Bar | null = null;
   private lastBarTime       = 0;
   private hasConnected      = false;
   private loadGeneration    = 0;
   private isFetchingHistory = false;
   private historyExhausted  = false;
+  private rafId:            number | null = null;
+  private throttleTimer:    ReturnType<typeof setTimeout> | null = null;
+  private pendingBarUpdate: Bar | null = null;
+  private lastDrawnMs       = 0;
+  private readonly DRAW_INTERVAL_MS = 1000;
   private readonly stream$ = new Subject<{ symbol: string; timeframe: string }>();
 
   private readonly backtestResult$ = toObservable(this.backtestStore.result);
@@ -76,25 +85,14 @@ export class ChartComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     const container = this.chartContainer.nativeElement;
-    this.chartService.init(container);
-
-    const unsubRange = this.chartService.subscribeVisibleLogicalRangeChange(range => {
-      if (!range || this.loading() || this.isFetchingHistory || this.historyExhausted) return;
-      if (range.from < 10) this.loadHistoricalBars();
-    });
 
     this.backtestResult$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.chartService.clearIndicatorSeries();
     });
 
-    const unsubCrosshair = this.chartService.subscribeCrosshairMove(data => {
-      this.crosshair.set(data);
-    });
-
-    // Live WebSocket stream — skipped for Alpaca symbols (REST-only).
     this.stream$.pipe(
       switchMap(({ symbol, timeframe }) =>
-        this.isAlpaca(symbol) ? EMPTY : this.binanceWs.streamBars(symbol, timeframe),
+        this.isAlpaca(symbol) ? EMPTY : timer(15000).pipe(switchMap(() => this.binanceWs.streamBars(symbol, timeframe))),
       ),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((event: WsEvent) => {
@@ -109,10 +107,10 @@ export class ChartComponent implements AfterViewInit {
         return;
       }
       if (event.type === 'bar' && event.bar) {
-        this.chartService.updateBar(event.bar);
-        this.currentPrice.set(event.bar.close);
+        this.pendingBarUpdate = event.bar;
         this.lastBarTime = event.bar.time as number;
         this.currentBar = null;
+        this.scheduleDraw();
         return;
       }
       if (event.type === 'trade' && event.price != null) {
@@ -120,28 +118,61 @@ export class ChartComponent implements AfterViewInit {
       }
     });
 
-    this.resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        this.chartService.resize(width, height);
-      }
-    });
-    this.resizeObserver.observe(container);
-
     this.destroyRef.onDestroy(() => {
+      if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+      if (this.throttleTimer !== null) clearTimeout(this.throttleTimer);
       this.resizeObserver?.disconnect();
-      unsubCrosshair();
-      unsubRange();
+      this.unsubCrosshair?.();
+      this.unsubRange?.();
       this.chartService.destroy();
     });
 
-    this.loadBars();
-    this.stream$.next({ symbol: this.symbol(), timeframe: this.timeframe() });
+    setTimeout(() => {
+      this.chartService.init(container);
+
+      this.unsubRange = this.chartService.subscribeVisibleLogicalRangeChange(range => {
+        if (!range || this.loading() || this.isFetchingHistory || this.historyExhausted) return;
+        if (range.from < 10) this.loadHistoricalBars();
+      });
+
+      this.unsubCrosshair = this.chartService.subscribeCrosshairMove(data => {
+        this.crosshair.set(data);
+      });
+
+      this.resizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          this.chartService.resize(width, height);
+        }
+      });
+      this.resizeObserver.observe(container);
+
+      this.loadBars();
+      this.stream$.next({ symbol: this.symbol(), timeframe: this.timeframe() });
+    }, 0);
+  }
+
+  private scheduleDraw(): void {
+    if (this.rafId !== null || this.throttleTimer !== null) return;
+    const lag = performance.now() - this.lastDrawnMs;
+    if (lag >= this.DRAW_INTERVAL_MS) {
+      this.rafId = requestAnimationFrame(() => { this.rafId = null; this.flush(); });
+    } else {
+      this.throttleTimer = setTimeout(() => {
+        this.throttleTimer = null;
+        this.rafId = requestAnimationFrame(() => { this.rafId = null; this.flush(); });
+      }, this.DRAW_INTERVAL_MS - lag);
+    }
+  }
+
+  private flush(): void {
+    this.lastDrawnMs = performance.now();
+    const bar = this.pendingBarUpdate ?? this.currentBar;
+    if (bar) { this.chartService.updateBar(bar); this.currentPrice.set(bar.close); }
+    this.pendingBarUpdate = null;
   }
 
   private applyTrade(price: number, tradeTime?: number): void {
-    this.currentPrice.set(price);
-
     const intervalSec = TIMEFRAME_SECONDS[this.timeframe()] ?? 3600;
     const barTime = tradeTime && !isNaN(tradeTime)
       ? (Math.floor(tradeTime / intervalSec) * intervalSec as UTCTimestamp)
@@ -159,7 +190,7 @@ export class ChartComponent implements AfterViewInit {
         low:  Math.min(this.currentBar.low,  price),
       };
     }
-    this.chartService.updateBar(this.currentBar);
+    this.scheduleDraw();
   }
 
   private loadHistoricalBars(): void {
@@ -228,16 +259,25 @@ export class ChartComponent implements AfterViewInit {
     });
   }
 
-  private refreshBacktestIndicators(): void {
+  private async refreshBacktestIndicators(): Promise<void> {
     if (!this.backtestStore.result()) return;
     try {
-      const result = this.engine.run(
+      const engine = await this.lazyEngine();
+      const result = engine.run(
         this.chartService.getBars(),
         this.strategyStore.config(),
         INITIAL_CAPITAL,
       );
       this.backtestStore.setResult(result);
     } catch { /* ignore recompute errors — keep existing result */ }
+  }
+
+  private async lazyEngine(): Promise<BacktestEngineService> {
+    if (!this._engine) {
+      const { BacktestEngineService } = await import('../../core/backtest/backtest-engine.service');
+      this._engine = new BacktestEngineService();
+    }
+    return this._engine;
   }
 
   private fillGap(): void {
