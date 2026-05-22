@@ -25,6 +25,20 @@
       </mat-select>
     </mat-form-field>
 
+    <mat-form-field appearance="outline" class="ctrl-field ctrl-field--capital">
+      <mat-label>{{ lang.t('backtest.capital') }}</mat-label>
+      <input
+        matInput
+        type="number"
+        [value]="store.capital()"
+        [disabled]="store.isRunning()"
+        min="1"
+        step="1000"
+        (change)="onCapitalChange($event)"
+      />
+      <span matTextSuffix>$</span>
+    </mat-form-field>
+
     <div class="btn-group">
       @if (store.status() !== 'running') {
         <button

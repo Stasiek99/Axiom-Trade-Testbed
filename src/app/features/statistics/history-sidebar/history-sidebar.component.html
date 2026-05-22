@@ -32,6 +32,14 @@
             <span class="run-name">{{ run.strategyConfig.name }}</span>
             <span class="run-date">{{ run.runAt | date:'dd.MM HH:mm' }}</span>
           </div>
+          <div class="run-capital">
+            <span class="cap-flow">
+              {{ fmtCap(run.capital) }}
+              <span class="cap-arrow">→</span>
+              <span [class.positive]="run.result.netPnl >= 0" [class.negative]="run.result.netPnl < 0">{{ fmtCap(run.result.finalCapital) }}</span>
+            </span>
+            <span class="cap-pos">{{ run.strategyConfig.risk.positionSizePct }}% · {{ fmtCap(capPerTrade(run)) }}/tr</span>
+          </div>
           <button
             mat-icon-button
             class="del-btn"

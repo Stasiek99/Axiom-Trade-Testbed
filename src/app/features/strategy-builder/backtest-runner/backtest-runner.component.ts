@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
@@ -23,8 +24,7 @@ import { SYMBOL_GROUPS, ALPACA_SYMBOLS } from '../../chart/symbol-selector/symbo
 import type { StrategyConfig } from '../../../core/strategy/strategy.model';
 
 const TIMEFRAMES = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1'];
-const INITIAL_CAPITAL = 10_000;
-const BASE_BARS       = 500;
+const BASE_BARS  = 500;
 
 function maxIndicatorPeriod(cfg: StrategyConfig): number {
   const slots = [
@@ -49,6 +49,7 @@ function maxIndicatorPeriod(cfg: StrategyConfig): number {
     MatProgressBarModule,
     MatSelectModule,
     MatFormFieldModule,
+    MatInputModule,
     MatIconModule,
     MatTooltipModule,
   ],
@@ -77,6 +78,11 @@ export class BacktestRunnerComponent {
     this.store.setContext(this.store.symbol(), value);
   }
 
+  protected onCapitalChange(event: Event): void {
+    const v = parseFloat((event.target as HTMLInputElement).value);
+    if (v > 0) this.store.setCapital(v);
+  }
+
   private runSub: Subscription | null = null;
 
   protected run(): void {
@@ -98,7 +104,7 @@ export class BacktestRunnerComponent {
       .subscribe({
         next: bars => {
           try {
-            const result = this.engine.run(bars, strategy, INITIAL_CAPITAL);
+            const result = this.engine.run(bars, strategy, this.store.capital());
             this.store.setResult(result);
             if (result.totalTrades > 0) {
               void this.store.saveRun(symbol, timeframe, this.store.capital(), this.store.endDate(), strategy, result);

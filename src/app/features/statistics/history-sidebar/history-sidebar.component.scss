@@ -140,6 +140,33 @@
   flex-shrink: 0;
 }
 
+.run-capital {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             4px;
+  margin-top:      1px;
+}
+
+.cap-flow {
+  display:     flex;
+  align-items: center;
+  gap:         3px;
+  font-size:   0.68rem;
+  font-weight: 600;
+  color:       rgba(255, 255, 255, 0.5);
+
+  .cap-arrow  { color: rgba(255, 255, 255, 0.2); font-weight: 400; }
+  .positive   { color: #26a69a; }
+  .negative   { color: #ef5350; }
+}
+
+.cap-pos {
+  font-size:   0.66rem;
+  color:       rgba(255, 255, 255, 0.28);
+  flex-shrink: 0;
+}
+
 .del-btn {
   position:   absolute;
   top:        50%;

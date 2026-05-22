@@ -35,4 +35,12 @@ export class HistorySidebarComponent {
   protected fmtPnl(n: number): string {
     return (n >= 0 ? '+' : '') + n.toFixed(2);
   }
+
+  protected fmtCap(n: number): string {
+    return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
+  }
+
+  protected capPerTrade(run: HistoryRecord): number {
+    return run.capital * run.strategyConfig.risk.positionSizePct / 100;
+  }
 }

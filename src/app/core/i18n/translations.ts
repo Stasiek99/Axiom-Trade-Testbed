@@ -26,7 +26,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'backtest.reset':        'Wyczyść',
     'backtest.symbol':       'Symbol',
     'backtest.timeframe':    'Interwał',
-    'backtest.capital':      'Kapitał startowy',
+    'backtest.capital':      'Kapitał początkowy',
     'backtest.endDate':      'Data końcowa',
     'backtest.trades':       'Transakcje',
     'backtest.winRate':      'Skuteczność',

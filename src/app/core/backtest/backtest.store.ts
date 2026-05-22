@@ -14,7 +14,7 @@ export class BacktestStore {
   private readonly _history   = signal<HistoryRecord[]>([]);
   private readonly _symbol    = signal<string>('ETH/USD');
   private readonly _timeframe = signal<string>('D1');
-  private readonly _capital   = signal<number>(10_000);
+  private readonly _capital   = signal<number>(500);
   private readonly _endDate   = signal<string | null>(null);
 
   readonly status    = this._status.asReadonly();
